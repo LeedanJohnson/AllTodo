@@ -10,7 +10,7 @@ namespace AllTodo.Shared.Models
 {
     class PhoneNumber
     {
-        private static readonly int REQUIRED_LENGTH = 12;
+        private static readonly int REQUIRED_LENGTH = 11;
         private static readonly Regex VALIDITY_REGEX = new Regex("^[0-9]");
 
         public PhoneNumber(string value)
