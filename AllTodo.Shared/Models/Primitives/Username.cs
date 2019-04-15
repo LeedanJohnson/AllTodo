@@ -16,15 +16,13 @@ namespace AllTodo.Shared.Models
 
         public Username(string value)
         {
-            value = value.Trim();
+            this.value = value.Trim();
 
-            if (value.Length < MINIMUM_LENGTH || value.Length > MAXIMUM_LENGTH)
+            if (this.value.Length < MINIMUM_LENGTH || this.value.Length > MAXIMUM_LENGTH)
                 throw new InvalidInitializationException("Invalid Length of UserName");
 
-            if (!VALIDITY_REGEX.IsMatch(value))
+            if (!VALIDITY_REGEX.IsMatch(this.value))
                 throw new InvalidInitializationException("Username contained invalid characters");
-
-            this.value = value;
         }
         
         private readonly string value;
