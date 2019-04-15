@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace AllTodo.Server.Models
+namespace AllTodo.Shared.Models
 {
     public class Todo
     {

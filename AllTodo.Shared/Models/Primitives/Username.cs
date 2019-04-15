@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using System.Text.RegularExpressions;
 using AllTodo.Shared.Exceptions;
 
-namespace SecureCodingToDo
+namespace AllTodo.Shared.Models
 {
     public class Username
     {
@@ -30,7 +30,7 @@ namespace SecureCodingToDo
         private readonly string value;
         public string Value
         {
-            get { return Value; }
+            get { return this.value; }
         }
     }
 }
