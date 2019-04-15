@@ -8,36 +8,29 @@ using AllTodo.Shared.Exceptions;
 
 namespace SecureCodingToDo
 {
-    public class UserName
+    public class Username
     {
-
         private static readonly int MINIMUM_LENGTH = 1;
         private static readonly int MAXIMUM_LENGTH = 80;
         private static readonly Regex VALIDITY_REGEX = new Regex("^[A-Za-z\']+$");
 
-        public UserName(string username)
+        public Username(string value)
         {
-            username = username.Trim();
+            value = value.Trim();
 
-            if (username.Length < MINIMUM_LENGTH || username.Length > MAXIMUM_LENGTH)
+            if (value.Length < MINIMUM_LENGTH || value.Length > MAXIMUM_LENGTH)
                 throw new InvalidInitializationException("Invalid Length of UserName");
 
-            if (!VALIDITY_REGEX.IsMatch(username))
+            if (!VALIDITY_REGEX.IsMatch(value))
                 throw new InvalidInitializationException("Username contained invalid characters");
 
-            this.username = username;
+            this.value = value;
         }
-
-        // Where did this come from?
-        // [Required]
-        // [MaxLength(100)]
-        private readonly string username;
-        public string Username
+        
+        private readonly string value;
+        public string Value
         {
-            get
-            {
-                return username;
-            }
+            get { return Value; }
         }
     }
 }
