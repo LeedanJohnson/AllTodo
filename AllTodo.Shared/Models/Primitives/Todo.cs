@@ -16,6 +16,8 @@ namespace AllTodo.Shared.Models
 
     public class Todo
     {
+        public int id { get; private set; }
+
         // TODO: Fill these in
         private static readonly int TITLE_MIN_LENGTH = 0;
         private static readonly int TITLE_MAX_LENGTH = 0;
@@ -36,8 +38,10 @@ namespace AllTodo.Shared.Models
             get { return this.description; }
         }
 
-        public Todo(string title, string description, TodoState state = TodoState.NOT_STARTED)
+        public Todo(int id, string title, string description, TodoState state = TodoState.NOT_STARTED)
         {
+            this.id = id;
+
             this.title = title.Trim();
             if (this.title.Length < TITLE_MIN_LENGTH || this.title.Length > TITLE_MAX_LENGTH)
                 throw new InvalidInitializationException("Invalid Length of Title");
