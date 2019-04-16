@@ -32,5 +32,20 @@ namespace AllTodo.Server.Controllers
                 return NotFound();
             return Ok(candidate);
         }
+
+        [HttpPost]
+        public IActionResult CreateTodo(string title, string description, int state = 0)
+        {
+            if (title == null || title == string.Empty)
+                return BadRequest();
+            if (description == null || description == string.Empty)
+                return BadRequest();
+            if (state < 0 || state > 2)
+                return BadRequest();
+
+            Todo new_todo = this.todo_service.CreateTodo(title, description, (TodoState)state);
+
+            return Ok(new_todo);
+        }
     }
 }

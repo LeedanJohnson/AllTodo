@@ -18,20 +18,20 @@ namespace AllTodo.Shared.Models
     {
         public int id { get; private set; }
 
-        // TODO: Fill these in
-        private static readonly int TITLE_MIN_LENGTH = 0;
-        private static readonly int TITLE_MAX_LENGTH = 0;
-        private static readonly Regex TITLE_VALIDITY_REGEX = new Regex("");
+        // TODO: Fill in regex
+        private static readonly int TITLE_MIN_LENGTH = 3;
+        private static readonly int TITLE_MAX_LENGTH = 20;
+        private static readonly Regex TITLE_VALIDITY_REGEX = new Regex("^*$");
         private readonly string title;
         public string Title
         {
             get { return this.title; }
         }
 
-        // TODO: Fill these in
+        // TODO: Fill in regex
         private static readonly int DESCRIPTION_MIN_LENGTH = 0;
-        private static readonly int DESCRIPTION_MAX_LENGTH = 0;
-        private static readonly Regex DESCRIPTION_VALIDITY_REGEX = new Regex("");
+        private static readonly int DESCRIPTION_MAX_LENGTH = 400;
+        private static readonly Regex DESCRIPTION_VALIDITY_REGEX = new Regex("^*$");
         private readonly string description;
         public string Description
         {
