@@ -6,7 +6,7 @@ using System.Text;
 
 namespace AllTodo.Shared.Services
 {
-    class VolatileTodoService : ITodoService
+    public class VolatileTodoService : ITodoService
     {
         public VolatileTodoService()
         {
@@ -28,30 +28,48 @@ namespace AllTodo.Shared.Services
 
         public Todo UpdateTodo(Todo todo, string title, string description, TodoState state)
         {
+            if (!this.Exists(todo))
+                return null;
+
             Todo updated = new Todo(todo.id, title, description, state);
 
-            this.todos.Remove(todo);
+            RemoveTodo(todo);
             this.todos.Add(updated);
             return updated;
         }
 
         public Todo UpdateTodo(int id, string title, string description, TodoState state)
         {
-            return this.UpdateTodo(this.todos.Find(t => t.id == id), title, description, state);
+            if (!this.Exists(id))
+                return null;
+
+            Todo updated = new Todo(id, title, description, state);
+
+            RemoveTodo(id);
+            this.todos.Add(updated);
+            return updated;
         }
 
         public Todo UpdateTodoState(Todo todo, TodoState state)
         {
+            if (!this.Exists(todo))
+                return null;
+
             Todo updated = new Todo(todo.id, todo.Title, todo.Description, state);
 
-            this.todos.Remove(todo);
+            RemoveTodo(todo);
             this.todos.Add(updated);
             return updated;
         }
 
         public Todo UpdateTodoState(int id, TodoState state)
         {
-            return this.UpdateTodoState(this.todos.Find(t => t.id == id), state);
+            Todo to_update = this.todos.SingleOrDefault(t => t.id == id);
+
+            if (to_update == null)
+                return null;
+
+            return this.UpdateTodoState(to_update, state);
         }
 
         public void RemoveTodo(Todo todo)
@@ -61,7 +79,7 @@ namespace AllTodo.Shared.Services
 
         public void RemoveTodo(int todo_id)
         {
-            todos.Remove(todos.Single(t => t.id == todo_id));
+            todos.Remove(todos.SingleOrDefault(t => t.id == todo_id));
         }
 
         public IReadOnlyList<Todo> GetTodos()
@@ -71,12 +89,12 @@ namespace AllTodo.Shared.Services
 
         public Todo GetTodo(int id)
         {
-            return todos.Single(t => t.id == id);
+            return todos.SingleOrDefault(t => t.id == id);
         }
 
         public Todo GetTodo(Todo todo)
         {
-            return todos.Single(t => t.id == todo.id);
+            return todos.SingleOrDefault(t => t.id == todo.id);
         }
 
         public bool Exists(int id)

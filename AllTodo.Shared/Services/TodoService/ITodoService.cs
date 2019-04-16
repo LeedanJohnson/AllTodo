@@ -5,7 +5,7 @@ using System.Text;
 
 namespace AllTodo.Shared.Services
 {
-    interface ITodoService
+    public interface ITodoService
     {
         Todo CreateTodo(string title, string description, TodoState state);
 
