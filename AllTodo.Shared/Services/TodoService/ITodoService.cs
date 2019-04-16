@@ -7,14 +7,21 @@ namespace AllTodo.Shared.Services
 {
     interface ITodoService
     {
-        Todo CreateTodo(string title, string description, TodoState state = TodoState.NOT_STARTED);
+        Todo CreateTodo(string title, string description, TodoState state);
 
+        Todo UpdateTodo(Todo todo, string title, string description, TodoState state);
         Todo UpdateTodo(int id, string title, string description, TodoState state);
+        Todo UpdateTodoState(Todo todo, TodoState state);
         Todo UpdateTodoState(int id, TodoState state);
 
         void RemoveTodo(Todo todo);
-        void RemoveTodo(int id);
+        void RemoveTodo(int todo_id);
 
         IReadOnlyList<Todo> GetTodos();
+        Todo GetTodo(int id);
+        Todo GetTodo(Todo todo);
+
+        bool Exists(int id);
+        bool Exists(Todo todo);
     }
 }

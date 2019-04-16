@@ -40,6 +40,20 @@ namespace AllTodo.Shared.Services
             return this.UpdateTodo(this.todos.Find(t => t.id == id), title, description, state);
         }
 
+        public Todo UpdateTodoState(Todo todo, TodoState state)
+        {
+            Todo updated = new Todo(todo.id, todo.Title, todo.Description, state);
+
+            this.todos.Remove(todo);
+            this.todos.Add(updated);
+            return updated;
+        }
+
+        public Todo UpdateTodoState(int id, TodoState state)
+        {
+            return this.UpdateTodoState(this.todos.Find(t => t.id == id), state);
+        }
+
         public void RemoveTodo(Todo todo)
         {
             this.todos.Remove(todo);
