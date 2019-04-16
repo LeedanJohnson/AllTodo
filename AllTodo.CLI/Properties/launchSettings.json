@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "AllTodo.CLI": {
+      "commandName": "Project",
+      "commandLineArgs": "shell"
+    }
+  }
+}

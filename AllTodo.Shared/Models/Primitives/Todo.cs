@@ -38,6 +38,12 @@ namespace AllTodo.Shared.Models
             get { return this.description; }
         }
 
+        private readonly TodoState state;
+        public TodoState State
+        {
+            get { return state; }
+        }
+
         public Todo(int id, string title, string description, TodoState state = TodoState.NOT_STARTED)
         {
             this.id = id;
@@ -53,6 +59,8 @@ namespace AllTodo.Shared.Models
                 throw new InvalidInitializationException("Invalid Length of Description");
             if (!DESCRIPTION_VALIDITY_REGEX.IsMatch(this.description))
                 throw new InvalidInitializationException("Description contained invalid characters");
+
+            this.state = state;
         }
 
         
