@@ -16,7 +16,7 @@ namespace AllTodo.Shared.Models
 
         public Username(string value)
         {
-            this.value = value.Trim();
+            this.value = value.Trim().ToLower();
 
             if (this.value.Length < MINIMUM_LENGTH || this.value.Length > MAXIMUM_LENGTH)
                 throw new InvalidInitializationException("Invalid Length of UserName");

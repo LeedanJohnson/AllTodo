@@ -47,7 +47,7 @@ namespace AllTodo.Shared.Models
 
         public Todo(int id, string title, string description, TodoState state = TodoState.NOT_STARTED)
         {
-            this.ID = id;
+            this.id = id;
 
             this.title = title.Trim();
             if (this.title.Length < TITLE_MIN_LENGTH || this.title.Length > TITLE_MAX_LENGTH)

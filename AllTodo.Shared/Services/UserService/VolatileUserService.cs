@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using System.Threading.Tasks;
 using AllTodo.Shared.Models;
 
 namespace AllTodo.Shared.Services
@@ -26,18 +25,19 @@ namespace AllTodo.Shared.Services
             return created_user;
         }
 
-        public Task<bool> ValidateCredentials(Username username, string password, out User user)
+        public bool Exists(Username username)
         {
-            user = null;
-            if (users.ContainsKey(username))
-            {
-                if (users[username].password.Verify(password))
-                {
-                    user = users[username].user;
-                    return Task.FromResult(true);
-                }
-            }
-            return Task.FromResult(false);
+            return users.ContainsKey(username);
+        }
+
+        public User GetUser(Username username)
+        {
+            return users[username].user;
+        }
+
+        public Password GetUserPassword(Username username)
+        {
+            return users[username].password;
         }
     }
 }
