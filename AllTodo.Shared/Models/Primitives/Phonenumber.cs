@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace AllTodo.Shared.Models
 {
-    class PhoneNumber
+    public class PhoneNumber
     {
         private static readonly int REQUIRED_LENGTH = 11;
         private static readonly Regex VALIDITY_REGEX = new Regex("^[0-9]");

@@ -16,7 +16,8 @@ namespace AllTodo.Shared.Models
 
     public class Todo
     {
-        public int id { get; private set; }
+        private readonly int id;
+        public int ID { get { return this.id; } }
 
         // TODO: Fill in regex
         private static readonly int TITLE_MIN_LENGTH = 3;
@@ -46,7 +47,7 @@ namespace AllTodo.Shared.Models
 
         public Todo(int id, string title, string description, TodoState state = TodoState.NOT_STARTED)
         {
-            this.id = id;
+            this.ID = id;
 
             this.title = title.Trim();
             if (this.title.Length < TITLE_MIN_LENGTH || this.title.Length > TITLE_MAX_LENGTH)

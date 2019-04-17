@@ -31,7 +31,7 @@ namespace AllTodo.Shared.Services
             if (!this.Exists(todo))
                 return null;
 
-            Todo updated = new Todo(todo.id, title, description, state);
+            Todo updated = new Todo(todo.ID, title, description, state);
 
             RemoveTodo(todo);
             this.todos.Add(updated);
@@ -55,7 +55,7 @@ namespace AllTodo.Shared.Services
             if (!this.Exists(todo))
                 return null;
 
-            Todo updated = new Todo(todo.id, todo.Title, todo.Description, state);
+            Todo updated = new Todo(todo.ID, todo.Title, todo.Description, state);
 
             RemoveTodo(todo);
             this.todos.Add(updated);
@@ -64,7 +64,7 @@ namespace AllTodo.Shared.Services
 
         public Todo UpdateTodoState(int id, TodoState state)
         {
-            Todo to_update = this.todos.SingleOrDefault(t => t.id == id);
+            Todo to_update = this.todos.SingleOrDefault(t => t.ID == id);
 
             if (to_update == null)
                 return null;
@@ -79,7 +79,7 @@ namespace AllTodo.Shared.Services
 
         public void RemoveTodo(int todo_id)
         {
-            todos.Remove(todos.SingleOrDefault(t => t.id == todo_id));
+            todos.Remove(todos.SingleOrDefault(t => t.ID == todo_id));
         }
 
         public IReadOnlyList<Todo> GetTodos()
@@ -89,22 +89,22 @@ namespace AllTodo.Shared.Services
 
         public Todo GetTodo(int id)
         {
-            return todos.SingleOrDefault(t => t.id == id);
+            return todos.SingleOrDefault(t => t.ID == id);
         }
 
         public Todo GetTodo(Todo todo)
         {
-            return todos.SingleOrDefault(t => t.id == todo.id);
+            return todos.SingleOrDefault(t => t.ID == todo.ID);
         }
 
         public bool Exists(int id)
         {
-            return todos.Exists(t => t.id == id);
+            return todos.Exists(t => t.ID == id);
         }
 
         public bool Exists(Todo todo)
         {
-            return todos.Exists(t => t.id == todo.id);
+            return todos.Exists(t => t.ID == todo.ID);
         }
     }
 }

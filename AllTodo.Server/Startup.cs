@@ -6,6 +6,8 @@ using AllTodo.Shared.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Rewrite;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace AllTodo.Server
@@ -16,9 +18,12 @@ namespace AllTodo.Server
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddMvc();
+            services.AddMvc(options =>
+            {
+                options.Filters.Add(new RequireHttpsAttribute());
+            });
 
-            services.AddSingleton<ITodoService, VolatileTodoService>();
+            services.AddSingleton<ITodoService>(new VolatileTodoService());
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -30,6 +35,8 @@ namespace AllTodo.Server
             {
                 app.UseDeveloperExceptionPage();
             }
+
+            app.UseRewriter(new RewriteOptions().AddRedirectToHttps(301, 44343));
 
             app.UseMvc();
         }
