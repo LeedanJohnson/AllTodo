@@ -26,9 +26,7 @@ namespace AllTodo.CLI
                 case "create":
                     Create(ArrayUtils.RemoveFirst(args));
                     break;
-                case "delete":
-                    Delete(ArrayUtils.RemoveFirst(args));
-                    break;
+
                 default:
                     Console.WriteLine("Error: improper usage. (--help for usage)");
                     break;
@@ -40,19 +38,29 @@ namespace AllTodo.CLI
             Console.WriteLine("Usage:\n" +
                                     "\t-h or --help: Displays help and usage information.\n" +
                                     "\tlogin: Used to login.\n" +
-                                    "\tcreate: Create an account.\n" +
-                                    "\tdelete: Delete an account.\n");
+                                    "\tcreate: Create an account.\n" );
         }
         
         static void Login(string[] args)
         {
-            Console.WriteLine("login");
+            APIClient client = new APIClient("https://localhost:44343");
+
+            LoginData data = new LoginData();
+
+            Console.WriteLine("Enter New Username: ");
+            data.Username = Console.ReadLine();
+
+            Console.WriteLine("Enter New Password: ");
+            data.Password = Console.ReadLine();
+
+            var result = client.PostAsync("api/login", data);
+
+            Console.Write($"Status: {result.status}, JSON: {result.jsonstring}");
         }
 
         static void Create(string[] args)
         {
             APIClient client = new APIClient("https://localhost:44343");
-
 
             CreateAccountData data = new CreateAccountData();
 
@@ -68,11 +76,6 @@ namespace AllTodo.CLI
             var result = client.PostAsync("api/account", data);
 
             Console.Write($"Status: {result.status}, JSON: {result.jsonstring}");
-        }
-
-        static void Delete(string[] args)
-        {
-            Console.WriteLine("Delete Stuff");
         }
     }
 }
