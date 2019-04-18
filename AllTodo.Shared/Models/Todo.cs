@@ -28,6 +28,11 @@ namespace AllTodo.Shared.Models
         {
             return Todo.Validate(this, userservice);
         }
+
+        public string ToString()
+        {
+            return $"ID: {this.ID}, Title: {this.Title}, Description: {this.Description}, State: {this.State}";
+        }
     }
 
     public class Todo
@@ -136,6 +141,11 @@ namespace AllTodo.Shared.Models
             dto.Description = this.description;
             dto.State = this.state;
             return dto;
+        }
+
+        public string ToString()
+        {
+            return $"ID: {this.id}, Title: {this.title}, Description: {this.description}, State: {this.state}";
         }
     }
 }

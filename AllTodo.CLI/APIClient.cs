@@ -41,18 +41,12 @@ namespace AllTodo.CLI
             return (response.StatusCode, result);
         }
 
-        public (HttpStatusCode status, string jsonstring) Get(string path, TokenCredentials credentials)
+        public (HttpStatusCode status, string jsonstring) Get(string path, TokenCredentialsDTO credentials)
         {
-            string data = JsonConvert.SerializeObject(credentials);
-            string url = $"{this.server_url}/{path}";
+            string url = $"{this.server_url}/{path}?idtoken={credentials.IDToken}&authtoken={credentials.AuthToken}";
             Encoding encoding = Encoding.Default;
             HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
             request.Method = "GET";
-            request.ContentType = "application/json; charset=utf-8";
-            byte[] buffer = encoding.GetBytes(data);
-            Stream dataStream = request.GetRequestStream();
-            dataStream.Write(buffer, 0, buffer.Length);
-            dataStream.Close();
             HttpWebResponse response = (HttpWebResponse)request.GetResponse();
 
             string result = "";

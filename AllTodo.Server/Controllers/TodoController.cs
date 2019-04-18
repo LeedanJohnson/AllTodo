@@ -40,78 +40,74 @@ namespace AllTodo.Server.Controllers
         }
 
         [HttpGet("{id}")]
-        public IActionResult GetTodo(string idtoken, string authtoken, int id)
+        public IActionResult GetTodo([FromBody](TokenCredentialsDTO credentials, int id) data)
         {
-            if (idtoken == null || idtoken == string.Empty)
+            if (data.credentials.IDToken == null || data.credentials.IDToken == string.Empty)
                 return BadRequest();
-            if (authtoken == null || authtoken == string.Empty)
+            if (data.credentials.AuthToken == null || data.credentials.AuthToken == string.Empty)
                 return BadRequest();
 
-            User user = this.userservice.GetUser(new MachineIDToken(idtoken, this.datetimeprovider), new AuthToken(authtoken));
+            User user = this.userservice.GetUser(new MachineIDToken(data.credentials.IDToken, this.datetimeprovider), new AuthToken(data.credentials.AuthToken));
 
             if (user != null)
-                return Ok(this.todoservice.GetTodo(id, user));
+                return Ok(this.todoservice.GetTodo(data.id, user));
 
             return NotFound();
         }
 
         [HttpPost]
-        public IActionResult CreateTodo(string idtoken, string authtoken, string title, string description, int state = 0)
+        public IActionResult CreateTodo([FromBody](TokenCredentialsDTO credentials, TodoDTO dto) data)
         {
-            if (idtoken == null || idtoken == string.Empty)
+            if (data.credentials.IDToken == null || data.credentials.IDToken == string.Empty)
                 return BadRequest();
-            if (authtoken == null || authtoken == string.Empty)
+            if (data.credentials.AuthToken == null || data.credentials.AuthToken == string.Empty)
                 return BadRequest();
-            if (title == null || title == string.Empty)
+            if (data.dto.Title == null || data.dto.Title == string.Empty)
                 return BadRequest();
-            if (description == null || description == string.Empty)
+            if (data.dto.Description == null || data.dto.Description == string.Empty)
                 return BadRequest();
-            if (state < 0 || state > 2)
+            if ((int)data.dto.State < 0 || (int)data.dto.State > 2)
                 return BadRequest();
 
-            User user = this.userservice.GetUser(new MachineIDToken(idtoken, this.datetimeprovider), new AuthToken(authtoken));
+            User user = this.userservice.GetUser(new MachineIDToken(data.credentials.IDToken, this.datetimeprovider), new AuthToken(data.credentials.AuthToken));
 
             if (user != null)
             {
-                TodoDTO dto = new TodoDTO();
-                dto.UserID = user.ID;
-                dto.Title = title;
-                dto.Description = description;
-                dto.State = (TodoState)state;
+                data.dto.UserID = user.ID;
 
-                (bool success, string message) validation_result = dto.Validate(this.userservice);
+                (bool success, string message) validation_result = data.dto.Validate(this.userservice);
 
                 if (!validation_result.success)
                     return BadRequest(validation_result.message);
 
-                return Ok(this.todoservice.CreateTodo(dto, user));
+                return Ok(this.todoservice.CreateTodo(data.dto, user));
             }
 
             return BadRequest();
         }
 
-        [HttpPatch("{id}")]
-        public IActionResult UpdateTodo(string idtoken, string authtoken, int id, string title, string description, int state = -1)
+        [HttpPatch()]
+        public IActionResult UpdateTodo([FromBody](TokenCredentialsDTO credentials, TodoDTO dto) data)
         {
-            if (idtoken == null || idtoken == string.Empty)
+            if (data.credentials.IDToken == null || data.credentials.IDToken == string.Empty)
                 return BadRequest();
-            if (authtoken == null || authtoken == string.Empty)
+            if (data.credentials.AuthToken == null || data.credentials.AuthToken == string.Empty)
                 return BadRequest();
 
-            User user = this.userservice.GetUser(new MachineIDToken(idtoken, this.datetimeprovider), new AuthToken(authtoken));
+            User user = this.userservice.GetUser(new MachineIDToken(data.credentials.IDToken, this.datetimeprovider), new AuthToken(data.credentials.AuthToken));
             if (user != null)
             {
-                if (!this.todoservice.Exists(id, user))
+                if (!this.todoservice.Exists(data.dto.ID, user))
                     return BadRequest();
 
-                TodoDTO dto = this.todoservice.GetTodo(id, user).GetDTO();
+                TodoDTO dto = this.todoservice.GetTodo(data.dto.ID, user).GetDTO();
 
-                if (title != null && title != string.Empty)
-                    dto.Title = title;
-                if (description != null && description != string.Empty)
-                    dto.Description = description;
-                if (state < 0)
-                    dto.State = (TodoState)state;
+                if (data.dto.Title != null && data.dto.Title != string.Empty)
+                    dto.Title = data.dto.Title;
+                if (data.dto.Description != null && data.dto.Description != string.Empty)
+                    dto.Description = data.dto.Description;
+                if (data.dto.State > 0)
+                    dto.State = (TodoState)data.dto.State;
 
                 (bool success, string message) validation_result = dto.Validate(this.userservice);
 
@@ -126,17 +122,17 @@ namespace AllTodo.Server.Controllers
         }
 
         [HttpDelete("{id}")]
-        public IActionResult DeleteTodo(string idtoken, string authtoken, int id)
+        public IActionResult DeleteTodo([FromBody](TokenCredentialsDTO credentials, int id) data)
         {
-            if (idtoken == null || idtoken == string.Empty)
+            if (data.credentials.IDToken == null || data.credentials.IDToken == string.Empty)
                 return BadRequest();
-            if (authtoken == null || authtoken == string.Empty)
+            if (data.credentials.AuthToken == null || data.credentials.AuthToken == string.Empty)
                 return BadRequest();
 
-            User user = this.userservice.GetUser(new MachineIDToken(idtoken, this.datetimeprovider), new AuthToken(authtoken));
+            User user = this.userservice.GetUser(new MachineIDToken(data.credentials.IDToken, this.datetimeprovider), new AuthToken(data.credentials.AuthToken));
             if (user != null)
             {
-                this.todoservice.RemoveTodo(id, user);
+                this.todoservice.RemoveTodo(data.id, user);
                 return Ok();
             }
             return BadRequest();

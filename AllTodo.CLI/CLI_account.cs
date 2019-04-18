@@ -1,4 +1,6 @@
-﻿using System;
+﻿using AllTodo.Shared.Models.Primitives;
+using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -74,7 +76,16 @@ namespace AllTodo.CLI
 
             var result = client.Post("api/account", data);
 
-            Console.Write($"Status: {result.status}, JSON: {result.jsonstring}");
+            if (result.status != System.Net.HttpStatusCode.OK)
+            {
+                Console.WriteLine($"There was an error with your request: {result.jsonstring}");
+                return;
+            }
+
+            TokenCredentialsDTO credentials = JsonConvert.DeserializeObject<TokenCredentialsDTO>(result.jsonstring);
+
+            Environment.SetEnvironmentVariable("ALLTODO_IDTOKEN", credentials.IDToken, EnvironmentVariableTarget.User);
+            Environment.SetEnvironmentVariable("ALLTODO_AUTHTOKEN", credentials.AuthToken, EnvironmentVariableTarget.User);
         }
     }
 }
