@@ -52,8 +52,7 @@ namespace AllTodo.CLI
         static void Create(string[] args)
         {
             APIClient client = new APIClient("https://localhost:44343");
-
-
+            
             CreateAccountData data = new CreateAccountData();
 
             Console.WriteLine("Enter New Username: ");
@@ -65,7 +64,7 @@ namespace AllTodo.CLI
             Console.WriteLine("Enter New Phone Number: ");
             data.PhoneNumber = Console.ReadLine();            
 
-            var result = client.PostAsync("api/account", data);
+            var result = client.Post("api/account", data);
 
             Console.Write($"Status: {result.status}, JSON: {result.jsonstring}");
         }

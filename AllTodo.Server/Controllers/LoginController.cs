@@ -22,14 +22,14 @@ namespace AllTodo.Server.Controllers
         private IDateTimeProvider datetimeprovider;
 
         [HttpPost]
-        public IActionResult Login(string username, string password)
+        public IActionResult Login([FromBody](string username, string password) data)
         {
-            if (username == null || username == string.Empty)
+            if (data.username == null || data.username == string.Empty)
                 return BadRequest();
-            if (password == null || password == string.Empty)
+            if (data.password == null || data.password == string.Empty)
                 return BadRequest();
 
-            User user = this.userservice.GetUser(new Username(username), password);
+            User user = this.userservice.GetUser(new Username(data.username), data.password);
 
             if (user != null)
             {

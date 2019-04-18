@@ -2,6 +2,7 @@
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -12,32 +13,76 @@ namespace AllTodo.CLI
 {
     class APIClient
     {
-        private HttpClient client;
+        private string server_url;
         public APIClient(string server_url)
         {
-            this.client = new HttpClient();
-            this.client.BaseAddress = new Uri(server_url);
-
-            // Add an Accept header for JSON format.
-            this.client.DefaultRequestHeaders.Accept.Add(
-            new MediaTypeWithQualityHeaderValue("application/json"));
+            this.server_url = server_url;
         }
 
-        ~APIClient()
+        public (HttpStatusCode status, string jsonstring) Post(string path, object obj)
         {
-            this.client.Dispose();
+            string data = JsonConvert.SerializeObject(obj);
+            string url = $"{this.server_url}/{path}";
+            Encoding encoding = Encoding.Default;
+            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
+            request.Method = "POST";
+            request.ContentType = "application/json; charset=utf-8";
+            byte[] buffer = encoding.GetBytes(data);
+            Stream dataStream = request.GetRequestStream();
+            dataStream.Write(buffer, 0, buffer.Length);
+            dataStream.Close();
+            HttpWebResponse response = (HttpWebResponse)request.GetResponse();
+
+            string result = "";
+            using (StreamReader reader = new StreamReader(response.GetResponseStream(), System.Text.Encoding.Default))
+            {
+                result = reader.ReadToEnd();
+            }
+            return (response.StatusCode, result);
         }
 
-        public (HttpStatusCode status, string jsonstring) PostAsync(string path, object data)
+        public (HttpStatusCode status, string jsonstring) Get(string path, TokenCredentials credentials)
         {
-            HttpResponseMessage response = client.PostAsJsonAsync(path, data).Result;
+            string data = JsonConvert.SerializeObject(credentials);
+            string url = $"{this.server_url}/{path}";
+            Encoding encoding = Encoding.Default;
+            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
+            request.Method = "GET";
+            request.ContentType = "application/json; charset=utf-8";
+            byte[] buffer = encoding.GetBytes(data);
+            Stream dataStream = request.GetRequestStream();
+            dataStream.Write(buffer, 0, buffer.Length);
+            dataStream.Close();
+            HttpWebResponse response = (HttpWebResponse)request.GetResponse();
 
-            (HttpStatusCode status, string jsonstring) result;
-            result.status = response.StatusCode;
-            result.jsonstring = response.Content.ReadAsStringAsync().Result;
-
-            return result;
+            string result = "";
+            using (StreamReader reader = new StreamReader(response.GetResponseStream(), System.Text.Encoding.Default))
+            {
+                result = reader.ReadToEnd();
+            }
+            return (response.StatusCode, result);
         }
 
+        public (HttpStatusCode status, string jsonstring) Patch(string path, object obj)
+        {
+            string data = JsonConvert.SerializeObject(obj);
+            string url = $"{this.server_url}/{path}";
+            Encoding encoding = Encoding.Default;
+            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
+            request.Method = "PATCH";
+            request.ContentType = "application/json; charset=utf-8";
+            byte[] buffer = encoding.GetBytes(data);
+            Stream dataStream = request.GetRequestStream();
+            dataStream.Write(buffer, 0, buffer.Length);
+            dataStream.Close();
+            HttpWebResponse response = (HttpWebResponse)request.GetResponse();
+
+            string result = "";
+            using (StreamReader reader = new StreamReader(response.GetResponseStream(), System.Text.Encoding.Default))
+            {
+                result = reader.ReadToEnd();
+            }
+            return (response.StatusCode, result);
+        }
     }
 }
