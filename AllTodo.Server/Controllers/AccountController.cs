@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using AllTodo.Shared.Services;
 using AllTodo.Shared.Models;
 using AllTodo.Shared.Models.Primitives;
-using AllTodo.Shared.Models.OperationObjects;
 
 namespace AllTodo.Server.Controllers
 {
@@ -21,21 +20,21 @@ namespace AllTodo.Server.Controllers
         }
 
         [HttpPost]
-        public IActionResult CreateAccount([FromBody] CreateAccountData data)
+        public IActionResult CreateAccount([FromBody] (string username, string password, string phone_number) data)
         {
-            if (data.Username == null || data.Username == string.Empty)
+            if (data.username == null || data.username == string.Empty)
                 return BadRequest();
-            if (data.Password == null || data.Password == string.Empty)
+            if (data.password == null || data.password == string.Empty)
                 return BadRequest();
-            if (data.PhoneNumber == null)
-                return BadRequest();
-
-            if (this.user_service.Exists(new Username(data.Username)))
+            if (data.phone_number == null)
                 return BadRequest();
 
-            this.user_service.CreateUser(new Username(data.Username), new HashedPassword(data.Password), new PhoneNumber(data.PhoneNumber));
+            if (this.user_service.Exists(new Username(data.username)))
+                return BadRequest();
 
-            User user = user_service.GetUser(new Username(data.Username), data.Password);
+            this.user_service.CreateUser(new Username(data.username), new HashedPassword(data.password), new PhoneNumber(data.phone_number));
+
+            User user = user_service.GetUser(new Username(data.username), data.password);
 
             if (user != null)
             {
