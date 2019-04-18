@@ -8,7 +8,8 @@ namespace AllTodo.Shared.Models.Primitives
 {
     public class AuthToken
     {
-        string token;
+        private readonly string token;
+        public string Token { get { return this.token; } }
 
         public AuthToken()
         {
@@ -16,9 +17,17 @@ namespace AllTodo.Shared.Models.Primitives
             token = BCrypt.Net.BCrypt.EnhancedHashPassword(guid, BCrypt.Net.HashType.SHA256);
         }
 
-        public bool Matches(string candidate)
+        // TODO: Validate token
+        public AuthToken(string token)
         {
-            return candidate == token;
+            this.token = token;
+        }
+
+        // TODO: Overload equality
+
+        public bool Matches(AuthToken other)
+        {
+            return this.token == other.Token;
         }
     }
 }

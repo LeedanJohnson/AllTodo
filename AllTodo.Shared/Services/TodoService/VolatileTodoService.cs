@@ -1,4 +1,5 @@
 ﻿using AllTodo.Shared.Models;
+using AllTodo.Shared.Models.DTOs;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,103 +9,132 @@ namespace AllTodo.Shared.Services
 {
     public class VolatileTodoService : ITodoService
     {
-        public VolatileTodoService(IAuthService authservice)
+        public VolatileTodoService(IUserService userservice)
         {
             this.current_id = 0;
-            this.authservice = authservice;
+            this.userservice = userservice;
+            todos = new List<Todo>();
         }
 
-        private IAuthService authservice;
+        private IUserService userservice;
         private int current_id;
         private readonly object lock_object = new object();
 
-        public Todo CreateTodo(User user, string title, string description, TodoState state)
+        List<Todo> todos;
+
+        public Todo CreateTodo(TodoDTO todo_dto, User user)
         {
+            lock (lock_object) { todo_dto.ID = current_id++; }
             Todo created_todo;
-            lock (lock_object) { created_todo = new Todo(current_id++, title, description, state); }
+            created_todo = new Todo(todo_dto, userservice);
             todos.Add(created_todo);
             return created_todo;
         }
 
-        public Todo UpdateTodo(User user, Todo todo, string title, string description, TodoState state)
+        public Todo UpdateTodo(TodoDTO todo_dto, User user)
         {
-            if (!this.Exists(user, todo))
+            if (!this.Exists(todo_dto.ID, user))
                 return null;
 
-            Todo updated = new Todo(todo.ID, title, description, state);
+            if (!todo_dto.Validate(userservice).success)
+                return null;
 
-            RemoveTodo(user, todo);
+            Todo updated = new Todo(todo_dto, userservice);
+
+            RemoveTodo(todo_dto.ID, user);
             this.todos.Add(updated);
             return updated;
         }
 
-        public Todo UpdateTodo(User user, int id, string title, string description, TodoState state)
+        public Todo UpdateTodoState(Todo todo, TodoState state, User user)
         {
-            if (!this.Exists(user, id))
+            if (!this.Exists(todo, user))
                 return null;
 
-            Todo updated = new Todo(id, title, description, state);
+            TodoDTO dto = todo.GetDTO();
+            dto.State = state;
 
-            RemoveTodo(user, id);
+            if (!dto.Validate(userservice).success)
+                return null;
+
+            Todo updated = new Todo(dto, userservice);
+
+            RemoveTodo(todo, user);
             this.todos.Add(updated);
             return updated;
         }
 
-        public Todo UpdateTodoState(User user, Todo todo, TodoState state)
+        public Todo UpdateTodoState(int todo_id, TodoState state, User user)
         {
-            if (!this.Exists(user, todo))
+            if (!IsAuthorized(todo_id, user))
                 return null;
 
-            Todo updated = new Todo(todo.ID, todo.Title, todo.Description, state);
-
-            RemoveTodo(user, todo);
-            this.todos.Add(updated);
-            return updated;
+            Todo to_update = this.todos.SingleOrDefault(t => t.ID == todo_id);
+            return UpdateTodoState(to_update, state, user);
         }
 
-        public Todo UpdateTodoState(User user, int id, TodoState state)
+        public void RemoveTodo(Todo todo, User user)
         {
-            Todo to_update = this.todos.SingleOrDefault(t => t.ID == id);
+            if (!IsAuthorized(todo, user))
+                return;
 
-            if (to_update == null)
-                return null;
-
-            return this.UpdateTodoState(user, to_update, state);
-        }
-
-        public void RemoveTodo(User user, Todo todo)
-        {
             this.todos.Remove(todo);
         }
 
-        public void RemoveTodo(User user, int todo_id)
+        public void RemoveTodo(int todo_id, User user)
         {
+            if (!IsAuthorized(todo_id, user))
+                return;
+
             todos.Remove(todos.SingleOrDefault(t => t.ID == todo_id));
         }
 
         public IReadOnlyList<Todo> GetTodos(User user)
         {
-            return this.todos;
+            return new List<Todo>(todos.Where(t => t.UserID == user.ID));
         }
 
-        public Todo GetTodo(User user, int id)
+        public Todo GetTodo(int id, User user)
         {
+            if (!IsAuthorized(id, user))
+                return null;
+
             return todos.SingleOrDefault(t => t.ID == id);
         }
 
-        public Todo GetTodo(User user, Todo todo)
+        public Todo GetTodo(Todo todo, User user)
         {
+            if (!IsAuthorized(todo, user))
+                return null;
+
             return todos.SingleOrDefault(t => t.ID == todo.ID);
         }
 
-        public bool Exists(User user, int id)
+        public bool Exists(int id, User user)
         {
+            if (!IsAuthorized(id, user))
+                return false;
+
             return todos.Exists(t => t.ID == id);
         }
 
-        public bool Exists(User user, Todo todo)
+        public bool Exists(Todo todo, User user)
         {
+            if (!IsAuthorized(todo, user))
+                return false;
+
             return todos.Exists(t => t.ID == todo.ID);
+        }
+
+        public bool IsAuthorized(Todo todo, User user)
+        {
+            return todo.UserID == user.ID;
+        }
+
+        public bool IsAuthorized(int todo_id, User user)
+        {
+            Todo todo = todos.SingleOrDefault(t => t.ID == todo_id);
+            return todo.UserID == user.ID;
         }
     }
 }

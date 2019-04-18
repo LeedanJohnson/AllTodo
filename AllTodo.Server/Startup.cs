@@ -23,7 +23,14 @@ namespace AllTodo.Server
                 options.Filters.Add(new RequireHttpsAttribute());
             });
 
-            services.AddSingleton<ITodoService>(new VolatileTodoService());
+            IDateTimeProvider datetimeprovider = new SimpleDateTimeProvider();
+            IUserService userservice = new VolatileUserService(datetimeprovider);
+            ITodoService todoservice = new VolatileTodoService(userservice);
+
+
+            services.AddSingleton<IDateTimeProvider>(datetimeprovider);
+            services.AddSingleton<IUserService>(userservice);
+            services.AddSingleton<ITodoService>(todoservice);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

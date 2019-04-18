@@ -12,14 +12,14 @@ namespace AllTodo.Server.Controllers
     [Route("api/login")]
     public class LoginController : Controller
     {
-        public LoginController(IAuthService auth_service, IDateTimeProvider datetime_provider)
+        public LoginController(IUserService userservice, IDateTimeProvider datetimeprovider)
         {
-            this.auth_service = auth_service;
-            this.datetime_provider = datetime_provider;
+            this.userservice = userservice;
+            this.datetimeprovider = datetimeprovider;
         }
 
-        private IAuthService auth_service;
-        private IDateTimeProvider datetime_provider;
+        private IUserService userservice;
+        private IDateTimeProvider datetimeprovider;
 
         [HttpPost]
         public IActionResult Login(string username, string password)
@@ -29,12 +29,11 @@ namespace AllTodo.Server.Controllers
             if (password == null || password == string.Empty)
                 return BadRequest();
 
-            User user = null;
-            (MachineIDToken idtoken, AuthToken authtoken) tokens;
+            User user = this.userservice.GetUser(new Username(username), password);
 
-            if (this.auth_service.ValidateCredentials(new Username(username), password, out user))
+            if (user != null)
             {
-                tokens = auth_service.GenerateTokens(user);
+                (MachineIDToken idtoken, AuthToken authtoken) tokens = userservice.GenerateTokens(user);
                 return Ok(tokens);
             }
             return BadRequest();
@@ -48,13 +47,12 @@ namespace AllTodo.Server.Controllers
             if (authtoken == null || authtoken == string.Empty)
                 return BadRequest();
 
-            User user = null;
-            (MachineIDToken idtoken, AuthToken authtoken) tokens;
+            User user = this.userservice.GetUser(new MachineIDToken(idtoken, this.datetimeprovider), new AuthToken(authtoken));
 
-            if (this.auth_service.ValidateTokens(idtoken, authtoken))
+            if (user != null)
             {
-                tokens = auth_service.RemoveTokens(user);
-                return Ok(tokens);
+                userservice.RemoveTokens(idtoken);
+                return Ok();
             }
             return BadRequest();
         }

@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 using System.Text.RegularExpressions;
 using AllTodo.Shared.Exceptions;
 
-namespace AllTodo.Shared.Models
+namespace AllTodo.Shared.Models.Primitives
 {
-    public class Username
+    public class Username : DomainPrimitive<Username>
     {
         private static readonly int MINIMUM_LENGTH = 1;
         private static readonly int MAXIMUM_LENGTH = 80;
@@ -29,6 +29,18 @@ namespace AllTodo.Shared.Models
         public string Value
         {
             get { return this.value; }
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (obj.GetType().Equals(typeof(Username)))
+            {
+                Username other = (Username)obj;
+                if (other.Value.Equals(this.Value))
+                    return true;
+                return false;
+            }
+            return false;
         }
     }
 }

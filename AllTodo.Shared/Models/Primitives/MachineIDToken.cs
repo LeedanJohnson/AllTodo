@@ -6,10 +6,11 @@ using System.Text;
 
 namespace AllTodo.Shared.Models.Primitives
 {
-    public class MachineIDToken
+    public class MachineIDToken : DomainPrimitive<MachineIDToken>
     {
         private IDateTimeProvider datetime_provider;
         private string token;
+        public string Token { get { return token; } }
 
         public MachineIDToken(IDateTimeProvider datetime_provider)
         {
@@ -38,6 +39,18 @@ namespace AllTodo.Shared.Models.Primitives
         public bool Matches(string candidate)
         {
             return candidate == token;
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (obj.GetType().Equals(typeof(MachineIDToken)))
+            {
+                MachineIDToken other = (MachineIDToken)obj;
+                if (other.Token.Equals(this.Token))
+                    return true;
+                return false;
+            }
+            return false;
         }
     }
 }
