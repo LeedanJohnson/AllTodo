@@ -90,14 +90,14 @@ namespace AllTodo.Shared.Services
             return null;
         }
 
-        public (MachineIDToken idtoken, AuthToken authtoken) GenerateTokens(User user)
+        public TokenCredentials GenerateTokens(User user)
         {
             MachineIDToken idtoken = new MachineIDToken(this.datetime_provider);
             AuthToken authtoken = new AuthToken();
 
             tokenized_users.Add(idtoken, (authtoken, user.Username));
 
-            return (idtoken, authtoken);
+            return new TokenCredentials(idtoken, authtoken);
         }
 
         public void RemoveTokens(string idtoken)

@@ -33,7 +33,7 @@ namespace AllTodo.Server.Controllers
 
             if (user != null)
             {
-                (MachineIDToken idtoken, AuthToken authtoken) tokens = userservice.GenerateTokens(user);
+                TokenCredentials tokens = userservice.GenerateTokens(user);
                 return Ok(tokens);
             }
             return BadRequest();

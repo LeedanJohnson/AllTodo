@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using AllTodo.Shared.Services;
 using AllTodo.Shared.Models;
 using AllTodo.Shared.Models.Primitives;
-using AllTodo.Shared.Models.DTOs;
 
 namespace AllTodo.Server.Controllers
 {

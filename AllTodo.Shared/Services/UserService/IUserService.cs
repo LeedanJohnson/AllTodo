@@ -10,7 +10,7 @@ namespace AllTodo.Shared.Services
     {
         User GetUser(Username username, string password);
         User GetUser(MachineIDToken idtoken, AuthToken authtoken);
-        (MachineIDToken idtoken, AuthToken authtoken) GenerateTokens(User user);
+        TokenCredentials GenerateTokens(User user);
         void RemoveTokens(string idtoken);
         User CreateUser(Username username, HashedPassword password, PhoneNumber phone_number);
         bool Exists(Username username);

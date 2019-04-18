@@ -1,5 +1,4 @@
 ﻿using AllTodo.Shared.Exceptions;
-using AllTodo.Shared.Models.DTOs;
 using AllTodo.Shared.Services;
 using System;
 using System.Collections.Generic;
@@ -14,6 +13,21 @@ namespace AllTodo.Shared.Models
         NOT_STARTED,
         IN_PROGRESS,
         COMPLETED
+    }
+
+
+    public class TodoDTO
+    {
+        public int ID { get; set; } = 0;
+        public int UserID { get; set; } = -1;
+        public string Title { get; set; }
+        public string Description { get; set; }
+        public TodoState State { get; set; }
+
+        public (bool success, string message) Validate(IUserService userservice)
+        {
+            return Todo.Validate(this, userservice);
+        }
     }
 
     public class Todo

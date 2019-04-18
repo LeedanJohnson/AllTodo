@@ -1,5 +1,4 @@
 ﻿using AllTodo.Shared.Models;
-using AllTodo.Shared.Models.DTOs;
 using System;
 using System.Collections.Generic;
 using System.Linq;
