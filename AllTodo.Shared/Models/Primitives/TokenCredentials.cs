@@ -14,6 +14,11 @@ namespace AllTodo.Shared.Models.Primitives
             this.IDToken = idtoken;
             this.AuthToken = authtoken;
         }
+
+        public string ToString()
+        {
+            return $"IDToken: {this.IDToken}, AuthToken: {this.AuthToken}";
+        }
     }
 
     public class TokenCredentials
@@ -28,6 +33,16 @@ namespace AllTodo.Shared.Models.Primitives
         {
             this.idtoken = idtoken;
             this.authtoken = authtoken;
+        }
+
+        public TokenCredentialsDTO GetDTO()
+        {
+            return new TokenCredentialsDTO(this.idtoken.Token, this.authtoken.Token);
+        }
+
+        public string ToString()
+        {
+            return $"IDToken: {this.idtoken.Token}, AuthToken: {this.authtoken.Token}";
         }
     }
 }

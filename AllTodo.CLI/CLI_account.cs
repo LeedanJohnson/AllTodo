@@ -1,4 +1,5 @@
-﻿using System;
+﻿using AllTodo.Shared.Models.OperationObjects;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -45,12 +46,18 @@ namespace AllTodo.CLI
         
         static void Login(string[] args)
         {
-            Console.WriteLine("Login Stuff");
+            Console.WriteLine("login");
         }
 
         static void Create(string[] args)
         {
-            Console.WriteLine("Create Stuff");
+            APIClient client = new APIClient("https://localhost:44343");
+
+            CreateAccountData data = new CreateAccountData("leedan", "johnson", "14352763423");
+
+            var result = client.PostAsync("api/account", data);
+
+            Console.Write($"Status: {result.status}, JSON: {result.jsonstring}");
         }
 
         static void Delete(string[] args)

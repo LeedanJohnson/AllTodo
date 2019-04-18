@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using AllTodo.Shared.Services;
 using AllTodo.Shared.Models;
 using AllTodo.Shared.Models.Primitives;
+using AllTodo.Shared.Models.OperationObjects;
 
 namespace AllTodo.Server.Controllers
 {
@@ -20,26 +21,26 @@ namespace AllTodo.Server.Controllers
         }
 
         [HttpPost]
-        public IActionResult CreateAccount(string username, string password, string phone_number)
+        public IActionResult CreateAccount([FromBody] CreateAccountData data)
         {
-            if (username == null || username == string.Empty)
+            if (data.Username == null || data.Username == string.Empty)
                 return BadRequest();
-            if (password == null || password == string.Empty)
+            if (data.Password == null || data.Password == string.Empty)
                 return BadRequest();
-            if (phone_number == null)
-                return BadRequest();
-
-            if (this.user_service.Exists(new Username(username)))
+            if (data.PhoneNumber == null)
                 return BadRequest();
 
-            this.user_service.CreateUser(new Username(username), new HashedPassword(password), new PhoneNumber(phone_number));
+            if (this.user_service.Exists(new Username(data.Username)))
+                return BadRequest();
 
-            User user = user_service.GetUser(new Username(username), password);
+            this.user_service.CreateUser(new Username(data.Username), new HashedPassword(data.Password), new PhoneNumber(data.PhoneNumber));
+
+            User user = user_service.GetUser(new Username(data.Username), data.Password);
 
             if (user != null)
             {
                 TokenCredentials tokens = user_service.GenerateTokens(user);
-                return Ok(tokens);
+                return Ok(tokens.GetDTO());
             }
             return BadRequest();
         }
