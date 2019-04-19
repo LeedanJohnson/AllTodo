@@ -1,4 +1,5 @@
-﻿using AllTodo.Shared.Models.Primitives;
+﻿using AllTodo.Shared.Models;
+using AllTodo.Shared.Models.Primitives;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;

@@ -1,4 +1,5 @@
-﻿using AllTodo.Shared.Models.Primitives;
+﻿using AllTodo.Shared.Models;
+using AllTodo.Shared.Models.Primitives;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -44,14 +45,14 @@ namespace AllTodo.CLI
         
         static void Login(string[] args)
         {
-            APIClient client = new APIClient("https://localhost:44343");
+            APIClient client = new APIClient("http://localhost:44343");
 
             (string username, string password) data;
 
-            Console.WriteLine("Enter New Username: ");
+            Console.WriteLine("Enter Username: ");
             data.username = Console.ReadLine();
 
-            Console.WriteLine("Enter New Password: ");
+            Console.WriteLine("Enter Password: ");
             data.password = Console.ReadLine();
 
             var result = client.Post("api/login", data);
@@ -61,7 +62,7 @@ namespace AllTodo.CLI
 
         static void Create(string[] args)
         {
-            APIClient client = new APIClient("https://localhost:44343");
+            APIClient client = new APIClient("http://localhost:44343");
 
             (string username, string password, string phone_number) data;
 

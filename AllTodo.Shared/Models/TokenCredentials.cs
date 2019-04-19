@@ -1,8 +1,9 @@
-﻿using System;
+﻿using AllTodo.Shared.Models.Primitives;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace AllTodo.Shared.Models.Primitives
+namespace AllTodo.Shared.Models
 {
     public class TokenCredentialsDTO
     {

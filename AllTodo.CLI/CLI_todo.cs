@@ -64,7 +64,7 @@ namespace AllTodo.CLI
                 return;
             }
 
-            APIClient client = new APIClient("https://localhost:44343");
+            APIClient client = new APIClient("http://localhost:44343");
 
             TodoDTO dto = new TodoDTO();
 
@@ -96,7 +96,7 @@ namespace AllTodo.CLI
                 return;
             }
 
-            APIClient client = new APIClient("https://localhost:44343");
+            APIClient client = new APIClient("http://localhost:44343");
             var result = client.Get("api/todos", new TokenCredentialsDTO(idtoken, authtoken));
 
             if (result.status != System.Net.HttpStatusCode.OK)
@@ -144,7 +144,7 @@ namespace AllTodo.CLI
                 return;
             }
 
-            APIClient client = new APIClient("https://localhost:44343");
+            APIClient client = new APIClient("http://localhost:44343");
 
             TodoDTO dto = new TodoDTO();
 
