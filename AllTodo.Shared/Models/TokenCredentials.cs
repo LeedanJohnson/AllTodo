@@ -5,23 +5,6 @@ using System.Text;
 
 namespace AllTodo.Shared.Models
 {
-    public class TokenCredentialsDTO
-    {
-        public string IDToken;
-        public string AuthToken;
-
-        public TokenCredentialsDTO(string idtoken, string authtoken)
-        {
-            this.IDToken = idtoken;
-            this.AuthToken = authtoken;
-        }
-
-        public string ToString()
-        {
-            return $"IDToken: {this.IDToken}, AuthToken: {this.AuthToken}";
-        }
-    }
-
     public class TokenCredentials
     {
         private readonly MachineIDToken idtoken;
@@ -36,14 +19,10 @@ namespace AllTodo.Shared.Models
             this.authtoken = authtoken;
         }
 
-        public TokenCredentialsDTO GetDTO()
-        {
-            return new TokenCredentialsDTO(this.idtoken.Token, this.authtoken.Token);
-        }
-
+        override
         public string ToString()
         {
-            return $"IDToken: {this.idtoken.Token}, AuthToken: {this.authtoken.Token}";
+            return $"IDToken: {idtoken.ToString()}, AuthToken: {authtoken.ToString()}";
         }
     }
 }

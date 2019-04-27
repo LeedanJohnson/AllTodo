@@ -1,4 +1,5 @@
 ﻿using AllTodo.Shared.Exceptions;
+using AllTodo.Shared.Models.Primitives;
 using AllTodo.Shared.Services;
 using System;
 using System.Collections.Generic;
@@ -20,132 +21,84 @@ namespace AllTodo.Shared.Models
     {
         public int ID { get; set; } = 0;
         public int UserID { get; set; } = -1;
-        public string Title { get; set; }
-        public string Description { get; set; }
+        public TodoTitle Title { get; set; }
+        public TodoDescription Description { get; set; }
         public TodoState State { get; set; }
 
-        public (bool success, string message) Validate(IUserService userservice)
+        public (bool success, string message) Validate()
         {
-            return Todo.Validate(this, userservice);
+            return Todo.Validate(Title, Description, State);
         }
 
+        public (bool success, string message) ValidateIdentifiers(IUserService userservice, ITodoService todoservice)
+        {
+            return Todo.ValidateIdentifiers(ID, UserID, userservice, todoservice);
+        }
+
+        override
         public string ToString()
         {
             return $"ID: {this.ID}, Title: {this.Title}, Description: {this.Description}, State: {this.State}";
         }
+
+        public Todo GetObject(IUserService userservice, ITodoService todoservice)
+        {
+            return new Todo(ID, UserID, Title, Description, State, userservice, todoservice);
+        }
     }
+
 
     public class Todo
     {
         private readonly int id;
-        public int ID { get { return this.id; } }
+        public int ID { get; }
 
         private readonly int user_id;
-        public int UserID { get { return this.user_id; } }
+        public int UserID { get; }
 
-        // TODO: Fill in regex
-        private static readonly int TITLE_MIN_LENGTH = 3;
-        private static readonly int TITLE_MAX_LENGTH = 20;
-        private static readonly Regex TITLE_VALIDITY_REGEX = new Regex("^*$");
-        private readonly string title;
-        public string Title
+        private readonly TodoTitle title;
+        public TodoTitle Title { get; }
+
+        private readonly TodoDescription description;
+        public TodoDescription Description { get; }
+
+        private TodoState state;
+        public TodoState State { get; }
+
+        public Todo(int id, int user_id, TodoTitle title, TodoDescription description, TodoState state, IUserService userservice, ITodoService todoservice)
         {
-            get { return this.title; }
-        }
+            var validation_result = Todo.Validate(title, description, state);
+            if (!validation_result.success)
+                throw new InvalidInitializationException(validation_result.message);
 
-        // TODO: Fill in regex
-        private static readonly int DESCRIPTION_MIN_LENGTH = 0;
-        private static readonly int DESCRIPTION_MAX_LENGTH = 400;
-        private static readonly Regex DESCRIPTION_VALIDITY_REGEX = new Regex("^*$");
-        private readonly string description;
-        public string Description
-        {
-            get { return this.description; }
-        }
+            var identifier_validation_result = Todo.ValidateIdentifiers(id, user_id, userservice, todoservice);
+            if (!identifier_validation_result.success)
+                throw new InvalidInitializationException(identifier_validation_result.message);
 
-        private readonly TodoState state;
-        public TodoState State
-        {
-            get { return state; }
-        }
-
-
-        public Todo(TodoDTO todo_dto, IUserService userservice)
-        {
-            this.id = todo_dto.ID;
-            this.user_id = todo_dto.UserID;
-            this.title = todo_dto.Title.Trim();
-            this.description = todo_dto.Description.Trim();
-            this.state = todo_dto.State;
-
-            (bool success, string message) validation_result = Todo.Validate(this.user_id, this.title, this.description, this.state, userservice);
-
-            if (validation_result.success)
-                return;
-
-            throw new InvalidInitializationException($"Creation of Todo failed. Error: {validation_result.message}");
-        }
-
-        public Todo(int id, int user_id, string title, string description, TodoState state, IUserService userservice)
-        {
             this.id = id;
             this.user_id = user_id;
-            this.title = title.Trim();
-            this.description = description.Trim();
+            this.title = title;
+            this.description = description;
             this.state = state;
-
-            (bool success, string message) validation_result = Todo.Validate(this.user_id, this.title, this.description, this.state, userservice);
-
-            if (validation_result.success)
-                return;
-
-            throw new InvalidInitializationException($"Creation of Todo failed. Error: {validation_result.message}");
         }
 
-        public static (bool success, string message) Validate(TodoDTO todo_dto, IUserService userservice)
-        {
-            return Todo.Validate(todo_dto.UserID, todo_dto.Title, todo_dto.Description, todo_dto.State, userservice);
-        }
-
-        public static (bool success, string message) Validate(int user_id, string title, string description, TodoState state, IUserService userservice)
+        public static (bool success, string message) ValidateIdentifiers(int id, int user_id, IUserService userservice, ITodoService todoservice)
         {
             if (!userservice.Exists(user_id))
-                return (false, $"Invalid User ID: {user_id}");
+                return (false, "User does not exist.");
 
-            if (title == null)
+            // TODO: Check that if Todo exists, this user owns it.
+
+            return (true, "Validation Sucessful.");
+        }
+
+        public static (bool success, string message) Validate(TodoTitle title, TodoDescription description, TodoState state)
+        {
+            if (title is null)
                 return (false, "Title cannot be null");
-            if (title.Length < TITLE_MIN_LENGTH || title.Length > TITLE_MAX_LENGTH)
-                return (false, $"Invalid Length of Title: {title.Length}");
-            if (!TITLE_VALIDITY_REGEX.IsMatch(title))
-                return (false, $"Title contained invalid characters: {title}");
-
-            if (description == null)
+            if (description is null)
                 return (false, "Description cannot be null");
-            if (description.Length < DESCRIPTION_MIN_LENGTH || description.Length > DESCRIPTION_MAX_LENGTH)
-                return (false, $"Invalid Length of description: {description.Length}");
-            if (!DESCRIPTION_VALIDITY_REGEX.IsMatch(description))
-                return (false, $"Description contained invalid characters: {description}");
-
-            if ((int)state < 0 || (int)state > 2)
-                return (false, $"Invalid state: {state}");
-
-            return (true, "Success");
-        }
-
-        public TodoDTO GetDTO()
-        {
-            TodoDTO dto = new TodoDTO();
-            dto.ID = this.id;
-            dto.UserID = this.user_id;
-            dto.Title = this.title;
-            dto.Description = this.description;
-            dto.State = this.state;
-            return dto;
-        }
-
-        public string ToString()
-        {
-            return $"ID: {this.id}, Title: {this.title}, Description: {this.description}, State: {this.state}";
+            return (true, "Validation Successful");
         }
     }
 }
