@@ -1,9 +1,18 @@
-﻿using System;
+﻿using AllTodo.Shared.Models.Primitives;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
 namespace AllTodo.Shared.Models
 {
+
+    public class UserDTO
+    {
+        public int ID { get; set; }
+        public string Username { get; set; }
+        public string PhoneNumber { get; set; }
+    }
+
     public class User
     {
         public User(int id, Username username, PhoneNumber phone_number)

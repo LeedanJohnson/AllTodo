@@ -5,7 +5,7 @@ EXPOSE 443
 
 FROM microsoft/dotnet:2.1-sdk AS build
 WORKDIR /src
-COPY ["AllTodo.Server/AllTodo.Server.csproj", "AllTodo.Server/"]
+COPY AllTodo.Server/AllTodo.Server.csproj AllTodo.Server/
 RUN dotnet restore "AllTodo.Server/AllTodo.Server.csproj"
 COPY . .
 WORKDIR "/src/AllTodo.Server"

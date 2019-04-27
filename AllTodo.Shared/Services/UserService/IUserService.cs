@@ -1,14 +1,19 @@
 ﻿using AllTodo.Shared.Models;
+using AllTodo.Shared.Models.Primitives;
 using System;
 using System.Collections.Generic;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace AllTodo.Shared.Services
 {
     public interface IUserService
     {
-        Task<bool> ValidateCredentials(Username username, string password, out User user);
-        User CreateUser(Username username, Password password, PhoneNumber phone_number)
+        User GetUser(Username username, string password);
+        User GetUser(MachineIDToken idtoken, AuthToken authtoken);
+        TokenCredentials GenerateTokens(User user);
+        void RemoveTokens(string idtoken);
+        User CreateUser(Username username, HashedPassword password, PhoneNumber phone_number);
+        bool Exists(Username username);
+        bool Exists(int user_id);
     }
 }

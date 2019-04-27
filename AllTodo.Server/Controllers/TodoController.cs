@@ -5,76 +5,137 @@ using System.Linq;
 using System.Threading.Tasks;
 using AllTodo.Shared.Services;
 using AllTodo.Shared.Models;
+using AllTodo.Shared.Models.Primitives;
 
 namespace AllTodo.Server.Controllers
 {
     [Route("api/todos")]
     public class TodoController : Controller
     {
-        public TodoController(ITodoService todo_service)
+        private ITodoService todoservice;
+        private IUserService userservice;
+        private IDateTimeProvider datetimeprovider;
+
+        public TodoController(IUserService userservice, ITodoService todoservice, IDateTimeProvider datetimeprovider)
         {
-            this.todo_service = todo_service;
+            this.userservice = userservice;
+            this.todoservice = todoservice;
+            this.datetimeprovider = datetimeprovider;
         }
 
-        private ITodoService todo_service;
-
         [HttpGet()]
-        public IActionResult GetTodos()
+        public IActionResult GetTodos(string idtoken, string authtoken)
         {
-            return Ok(this.todo_service.GetTodos());
+            if (idtoken == null || idtoken == string.Empty)
+                return BadRequest();
+            if (authtoken == null || authtoken == string.Empty)
+                return BadRequest();
+
+            User user = this.userservice.GetUser(new MachineIDToken(idtoken, this.datetimeprovider), new AuthToken(authtoken));
+
+            if (user != null)
+                return Ok(this.todoservice.GetTodos(user));
+
+            return NotFound();
         }
 
         [HttpGet("{id}")]
-        public IActionResult GetTodo(int id)
+        public IActionResult GetTodo([FromBody](TokenCredentialsDTO credentials, int id) data)
         {
-            Todo candidate = this.todo_service.GetTodo(id);
-            if (candidate == null)
-                return NotFound();
-            return Ok(candidate);
+            if (data.credentials.IDToken == null || data.credentials.IDToken == string.Empty)
+                return BadRequest();
+            if (data.credentials.AuthToken == null || data.credentials.AuthToken == string.Empty)
+                return BadRequest();
+
+            User user = this.userservice.GetUser(new MachineIDToken(data.credentials.IDToken, this.datetimeprovider), new AuthToken(data.credentials.AuthToken));
+
+            if (user != null)
+                return Ok(this.todoservice.GetTodo(data.id, user));
+
+            return NotFound();
         }
 
         [HttpPost]
-        public IActionResult CreateTodo(string title, string description, int state = 0)
+        public IActionResult CreateTodo([FromBody](TokenCredentialsDTO credentials, TodoDTO dto) data)
         {
-            if (title == null || title == string.Empty)
+            if (data.credentials.IDToken == null || data.credentials.IDToken == string.Empty)
                 return BadRequest();
-            if (description == null || description == string.Empty)
+            if (data.credentials.AuthToken == null || data.credentials.AuthToken == string.Empty)
                 return BadRequest();
-            if (state < 0 || state > 2)
+            if (data.dto.Title == null || data.dto.Title == string.Empty)
+                return BadRequest();
+            if (data.dto.Description == null || data.dto.Description == string.Empty)
+                return BadRequest();
+            if ((int)data.dto.State < 0 || (int)data.dto.State > 2)
                 return BadRequest();
 
-            Todo new_todo = this.todo_service.CreateTodo(title, description, (TodoState)state);
+            User user = this.userservice.GetUser(new MachineIDToken(data.credentials.IDToken, this.datetimeprovider), new AuthToken(data.credentials.AuthToken));
 
-            return Ok(new_todo);
+            if (user != null)
+            {
+                data.dto.UserID = user.ID;
+
+                (bool success, string message) validation_result = data.dto.Validate(this.userservice);
+
+                if (!validation_result.success)
+                    return BadRequest(validation_result.message);
+
+                return Ok(this.todoservice.CreateTodo(data.dto, user));
+            }
+
+            return BadRequest();
         }
 
-        [HttpPatch("{id}")]
-        public IActionResult UpdateTodo(int id, string title, string description, int state = -1)
+        [HttpPatch()]
+        public IActionResult UpdateTodo([FromBody](TokenCredentialsDTO credentials, TodoDTO dto) data)
         {
-            if (!this.todo_service.Exists(id))
+            if (data.credentials.IDToken == null || data.credentials.IDToken == string.Empty)
+                return BadRequest();
+            if (data.credentials.AuthToken == null || data.credentials.AuthToken == string.Empty)
                 return BadRequest();
 
-            Todo existing_todo = this.todo_service.GetTodo(id);
+            User user = this.userservice.GetUser(new MachineIDToken(data.credentials.IDToken, this.datetimeprovider), new AuthToken(data.credentials.AuthToken));
+            if (user != null)
+            {
+                if (!this.todoservice.Exists(data.dto.ID, user))
+                    return BadRequest();
 
-            if (title == null || title == string.Empty)
-                title = existing_todo.Title;
-            if (description == null || description == string.Empty)
-                description = existing_todo.Description;
-            if (state < 0)
-                state = (int)existing_todo.State;
-            if (state < 0 || state > 2)
-                return BadRequest();
+                TodoDTO dto = this.todoservice.GetTodo(data.dto.ID, user).GetDTO();
 
-            Todo new_todo = this.todo_service.UpdateTodo(id, title, description, (TodoState)state);
+                if (data.dto.Title != null && data.dto.Title != string.Empty)
+                    dto.Title = data.dto.Title;
+                if (data.dto.Description != null && data.dto.Description != string.Empty)
+                    dto.Description = data.dto.Description;
+                if (data.dto.State > 0)
+                    dto.State = (TodoState)data.dto.State;
 
-            return Ok(new_todo);
+                (bool success, string message) validation_result = dto.Validate(this.userservice);
+
+                if (!validation_result.success)
+                    return BadRequest(validation_result.message);
+
+                Todo updated_todo = this.todoservice.UpdateTodo(dto, user);
+
+                return Ok(updated_todo);
+            }
+            return BadRequest();
         }
 
         [HttpDelete("{id}")]
-        public IActionResult DeleteTodo(int id)
+        public IActionResult DeleteTodo([FromBody](TokenCredentialsDTO credentials, int id) data)
         {
-            this.todo_service.RemoveTodo(id);
-            return Ok();
+            if (data.credentials.IDToken == null || data.credentials.IDToken == string.Empty)
+                return BadRequest();
+            if (data.credentials.AuthToken == null || data.credentials.AuthToken == string.Empty)
+                return BadRequest();
+
+            User user = this.userservice.GetUser(new MachineIDToken(data.credentials.IDToken, this.datetimeprovider), new AuthToken(data.credentials.AuthToken));
+            if (user != null)
+            {
+                this.todoservice.RemoveTodo(data.id, user);
+                return Ok();
+            }
+            return BadRequest();
         }
     }
 }

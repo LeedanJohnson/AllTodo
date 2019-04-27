@@ -7,14 +7,14 @@ using System.Threading.Tasks;
 
 namespace AllTodo.Shared.Models
 {
-    public class Password
+    public class HashedPassword
     {
         // TODO: fill in the regex
         private static readonly int MINIMUM_LENGTH = 8;
         private static readonly int MAXIMUM_LENGTH = 25;
         private static readonly Regex VALIDITY_REGEX = new Regex("^*$");
 
-        public Password(string password)
+        public HashedPassword(string password)
         {
             this.hash = BCrypt.Net.BCrypt.HashPassword(password);
         }

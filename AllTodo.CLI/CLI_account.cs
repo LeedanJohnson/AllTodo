@@ -1,4 +1,7 @@
-﻿using System;
+﻿using AllTodo.Shared.Models;
+using AllTodo.Shared.Models.Primitives;
+using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -25,9 +28,7 @@ namespace AllTodo.CLI
                 case "create":
                     Create(ArrayUtils.RemoveFirst(args));
                     break;
-                case "delete":
-                    Delete(ArrayUtils.RemoveFirst(args));
-                    break;
+
                 default:
                     Console.WriteLine("Error: improper usage. (--help for usage)");
                     break;
@@ -39,23 +40,53 @@ namespace AllTodo.CLI
             Console.WriteLine("Usage:\n" +
                                     "\t-h or --help: Displays help and usage information.\n" +
                                     "\tlogin: Used to login.\n" +
-                                    "\tcreate: Create an account.\n" +
-                                    "\tdelete: Delete an account.\n");
+                                    "\tcreate: Create an account.\n" );
         }
         
         static void Login(string[] args)
         {
-            Console.WriteLine("Login Stuff");
+            APIClient client = new APIClient("http://localhost:44343");
+
+            (string username, string password) data;
+
+            Console.WriteLine("Enter Username: ");
+            data.username = Console.ReadLine();
+
+            Console.WriteLine("Enter Password: ");
+            data.password = Console.ReadLine();
+
+            var result = client.Post("api/login", data);
+
+            Console.Write($"Status: {result.status}, JSON: {result.jsonstring}");
         }
 
         static void Create(string[] args)
         {
-            Console.WriteLine("Create Stuff");
-        }
+            APIClient client = new APIClient("http://localhost:44343");
 
-        static void Delete(string[] args)
-        {
-            Console.WriteLine("Delete Stuff");
+            (string username, string password, string phone_number) data;
+
+            Console.WriteLine("Enter New Username: ");
+            data.username = Console.ReadLine();
+
+            Console.WriteLine("Enter New Password: ");
+            data.password = Console.ReadLine();
+
+            Console.WriteLine("Enter New Phone Number: ");
+            data.phone_number = Console.ReadLine();            
+
+            var result = client.Post("api/account", data);
+
+            if (result.status != System.Net.HttpStatusCode.OK)
+            {
+                Console.WriteLine($"There was an error with your request: {result.jsonstring}");
+                return;
+            }
+
+            TokenCredentialsDTO credentials = JsonConvert.DeserializeObject<TokenCredentialsDTO>(result.jsonstring);
+
+            Environment.SetEnvironmentVariable("ALLTODO_IDTOKEN", credentials.IDToken, EnvironmentVariableTarget.User);
+            Environment.SetEnvironmentVariable("ALLTODO_AUTHTOKEN", credentials.AuthToken, EnvironmentVariableTarget.User);
         }
     }
 }
