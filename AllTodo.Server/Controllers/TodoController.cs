@@ -44,7 +44,6 @@ namespace AllTodo.Server.Controllers
         [HttpGet("{id}")]
         public IActionResult GetTodo([FromHeader]string idtoken, [FromHeader]string authtoken, [FromRoute]int id )
         {
-
             TokenCredentialsDTO credentials_dto = new TokenCredentialsDTO(idtoken, authtoken);
             var credential_validation = credentials_dto.Validate();
             if (!credential_validation.success)

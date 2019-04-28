@@ -58,6 +58,9 @@ namespace AllTodo.Shared.Models
         private static readonly Regex VALIDITY_REGEX = new Regex("^[0-9]");
         public static (bool success, string message) Validate(string value)
         {
+            if (value == null)
+                return (false, "Phone Number cannot be null");
+            
             if (value.Length != REQUIRED_LENGTH)
                 return (false, $"Invalid Length of Phone Number. Expected {REQUIRED_LENGTH}, got {value.Length}.");
             return (true, "Validation Successful");

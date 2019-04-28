@@ -20,28 +20,32 @@ namespace AllTodo.Server.Controllers
         }
 
         [HttpPost]
-        public IActionResult CreateAccount([FromBody] (string username, string password, string phone_number) data)
+        public IActionResult CreateAccount([FromBody](string username, string password, string phone_number) data)
         {
-            if (data.username == null || data.username == string.Empty)
-                return BadRequest();
-            if (data.password == null || data.password == string.Empty)
-                return BadRequest();
-            if (data.phone_number == null)
-                return BadRequest();
+            var validate_username = Username.Validate(data.username);
+            if (!validate_username.success)
+                return BadRequest(validate_username.message);
+
+            var validate_password = RawPassword.Validate(data.password);
+            if (!validate_password.success)
+                return BadRequest(validate_password.message);
+
+            var validate_phone_number = PhoneNumber.Validate(data.phone_number);
+            if (!validate_phone_number.success)
+                return BadRequest(validate_phone_number.message);
 
             if (this.user_service.Exists(new Username(data.username)))
-                return BadRequest();
+                return BadRequest("Username already exists");
 
             this.user_service.CreateUser(new Username(data.username), new HashedPassword(data.password), new PhoneNumber(data.phone_number));
 
             User user = user_service.GetUser(new Username(data.username), data.password);
 
-            if (user != null)
-            {
-                TokenCredentials tokens = user_service.GenerateTokens(user);
-                return Created("api/login", tokens.GetDTO());
-            }
-            return BadRequest();
+            if (user == null)
+                return BadRequest();
+
+            TokenCredentials tokens = user_service.GenerateTokens(user);
+            return Created("api/login", tokens.GetDTO());
         }
     }
 }

@@ -105,9 +105,9 @@ namespace AllTodo.CLI
             if (result.response_code == System.Net.HttpStatusCode.OK)
             {
                 List<TodoDTO> todos = JsonConvert.DeserializeObject<List<TodoDTO>>(result.jsonstring);
-
                 foreach (TodoDTO todo in todos)
                     Console.WriteLine(todo.ToString());
+                return;
             }
 
             Console.WriteLine($"There was an error with your request: Code: {result.response_code} Content:{result.jsonstring}");

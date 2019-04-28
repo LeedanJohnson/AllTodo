@@ -52,9 +52,10 @@ namespace AllTodo.Shared.Models.Primitives
         private static readonly Regex VALIDITY_REGEX = new Regex("^[a-z\']+$");
         public static (bool success, string message) Validate(string value)
         {
+            if (value == null)
+                return (false, "Username cannot be null");
             if (value.Length < MIN_LENGTH || value.Length > MAX_LENGTH)
                 return (false, $"Invalid Length of UserName. Expected {MIN_LENGTH}-{MAX_LENGTH}, got {value.Length}.");
-
             if (!VALIDITY_REGEX.IsMatch(value))
                 return (false, "Username contained invalid characters");
 

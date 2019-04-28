@@ -24,10 +24,13 @@ namespace AllTodo.Server.Controllers
         [HttpGet]
         public IActionResult Login([FromHeader]string username, [FromHeader]string password)
         {
-            if (username == null || username == string.Empty)
-                return BadRequest();
-            if (password == null || password == string.Empty)
-                return BadRequest();
+            var validate_username = Username.Validate(username);
+            if (!validate_username.success)
+                return BadRequest(validate_username.message);
+
+            var validate_password = RawPassword.Validate(password);
+            if (!validate_password.success)
+                return BadRequest(validate_password.message);
 
             User user = this.userservice.GetUser(new Username(username), password);
 
