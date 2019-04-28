@@ -9,7 +9,7 @@ namespace AllTodo.CLI
 {
     class CLI_todo
     {
-        public static void Call(string[] args)
+        public static void Call(APIClient client, string[] args)
         {
             if (args.Length < 1)
             {
@@ -23,19 +23,19 @@ namespace AllTodo.CLI
                     PrintUsage();
                     break;
                 case "add":
-                    Add(ArrayUtils.RemoveFirst(args));
+                    Add(client, ArrayUtils.RemoveFirst(args));
                     break;
                 case "remove":
-                    Remove(ArrayUtils.RemoveFirst(args));
+                    Remove(client, ArrayUtils.RemoveFirst(args));
                     break;
                 case "complete":
-                    Complete(ArrayUtils.RemoveFirst(args));
+                    Complete(client, ArrayUtils.RemoveFirst(args));
                     break;
                 case "modify":
-                    Modify(ArrayUtils.RemoveFirst(args));
+                    Modify(client, ArrayUtils.RemoveFirst(args));
                     break;
                 case "list":
-                    List(ArrayUtils.RemoveFirst(args));
+                    List(client, ArrayUtils.RemoveFirst(args));
                     break;
                 default:
                     Console.WriteLine("Error: improper usage. (--help for usage)");
@@ -53,79 +53,68 @@ namespace AllTodo.CLI
                                     "\tmodify: Modify a todo.\n");
         }
 
-        static void Add(string[] args)
+        static void Add(APIClient client, string[] args)
         {
-            string idtoken = Environment.GetEnvironmentVariable("ALLTODO_IDTOKEN", EnvironmentVariableTarget.User);
-            string authtoken = Environment.GetEnvironmentVariable("ALLTODO_AUTHTOKEN", EnvironmentVariableTarget.User);
-
-            if (idtoken == null || authtoken == null || idtoken == string.Empty || authtoken == string.Empty)
-            {
-                Console.WriteLine("Please login before continuing");
-                return;
-            }
-
-            APIClient client = new APIClient("http://localhost:44343");
-
             TodoDTO dto = new TodoDTO();
 
             Console.WriteLine("Enter Todo title: ");
             dto.Title = Console.ReadLine();
+            var title_validation = TodoTitle.Validate(dto.Title);
+            while (!title_validation.success)
+            {
+                Console.WriteLine($"Invalid Title: {title_validation.message}");
+                Console.WriteLine("Enter Todo title: ");
+                dto.Title = Console.ReadLine();
+
+                title_validation = TodoTitle.Validate(dto.Title);
+            }
 
             Console.WriteLine("Enter Todo description: ");
             dto.Description = Console.ReadLine();
+            var description_validation = TodoDescription.Validate(dto.Description);
+            while (!description_validation.success)
+            {
+                Console.WriteLine($"Invalid Description: {description_validation.message}");
+                Console.WriteLine("Enter Todo description: ");
+                dto.Description = Console.ReadLine();
+
+                description_validation = TodoTitle.Validate(dto.Description);
+            }
 
             dto.State = 0;
 
-            var result = client.Post("api/todos", (new TokenCredentialsDTO(idtoken, authtoken), dto));
+            var result = client.Post("api/todos", dto);
 
-            if (result.status != System.Net.HttpStatusCode.OK)
+            if (result.response_code == System.Net.HttpStatusCode.Created)
+                return;
+
+            if (result.response_code == System.Net.HttpStatusCode.Unauthorized)
             {
-                Console.WriteLine($"There was an error with your request: {result.jsonstring}");
+                Console.WriteLine($"It doesn't look like you're logged in! Please log in!");
                 return;
             }
+
+            Console.WriteLine($"There was an error with your request: Code: {result.response_code} Content:{result.jsonstring}");
+            return;
         }
 
-        static void List(string[] args)
+        static void List(APIClient client, string[] args)
         {
-            string idtoken = Environment.GetEnvironmentVariable("ALLTODO_IDTOKEN", EnvironmentVariableTarget.User);
-            string authtoken = Environment.GetEnvironmentVariable("ALLTODO_AUTHTOKEN", EnvironmentVariableTarget.User);
+            var result = client.Get("api/todos");
 
-            if (idtoken == null || authtoken == null || idtoken == string.Empty || authtoken == string.Empty)
+            if (result.response_code == System.Net.HttpStatusCode.OK)
             {
-                Console.WriteLine("Please login before continuing");
-                return;
+                List<TodoDTO> todos = JsonConvert.DeserializeObject<List<TodoDTO>>(result.jsonstring);
+
+                foreach (TodoDTO todo in todos)
+                    Console.WriteLine(todo.ToString());
             }
 
-            APIClient client = new APIClient("http://localhost:44343");
-            var result = client.Get("api/todos", new TokenCredentialsDTO(idtoken, authtoken));
-
-            if (result.status != System.Net.HttpStatusCode.OK)
-            {
-                Console.WriteLine($"There was an error with your request: {result.jsonstring}");
-                return;
-            }
-
-            List<TodoDTO> todos = JsonConvert.DeserializeObject<List<TodoDTO>>(result.jsonstring);
-
-            foreach (TodoDTO todo in todos)
-            {
-                Console.WriteLine(todo.ToString());
-            }
+            Console.WriteLine($"There was an error with your request: Code: {result.response_code} Content:{result.jsonstring}");
+            return;
         }
 
-        static void Remove(string[] args)
-        {
-            string idtoken = Environment.GetEnvironmentVariable("ALLTODO_IDTOKEN", EnvironmentVariableTarget.User);
-            string authtoken = Environment.GetEnvironmentVariable("ALLTODO_AUTHTOKEN", EnvironmentVariableTarget.User);
-
-            if (idtoken == null || authtoken == null || idtoken == string.Empty || authtoken == string.Empty)
-            {
-                Console.WriteLine("Please login before continuing");
-                return;
-            }
-        }
-
-        static void Complete(string[] args)
+        static void Complete(APIClient client, string[] args)
         {
             if (args.Length != 1)
             {
@@ -135,41 +124,30 @@ namespace AllTodo.CLI
 
             int id = int.Parse(args[0]);
 
-            string idtoken = Environment.GetEnvironmentVariable("ALLTODO_IDTOKEN", EnvironmentVariableTarget.User);
-            string authtoken = Environment.GetEnvironmentVariable("ALLTODO_AUTHTOKEN", EnvironmentVariableTarget.User);
-
-            if (idtoken == null || authtoken == null || idtoken == string.Empty || authtoken == string.Empty)
-            {
-                Console.WriteLine("Please login before continuing");
-                return;
-            }
-
-            APIClient client = new APIClient("http://localhost:44343");
-
             TodoDTO dto = new TodoDTO();
 
             dto.ID = id;
             dto.State = TodoState.COMPLETED;
 
-            var result = client.Patch("api/todos", (new TokenCredentialsDTO(idtoken, authtoken), dto));
+            var result = client.Patch("api/todos", dto);
 
-            if (result.status != System.Net.HttpStatusCode.OK)
-            {
-                Console.WriteLine($"There was an error with your request: {result.jsonstring}");
+            if (result.response_code == System.Net.HttpStatusCode.OK)
                 return;
-            }
+            
+            Console.WriteLine($"There was an error with your request: Code: {result.response_code} Content:{result.jsonstring}");
+            return;
         }
 
-        static void Modify(string[] args)
+        static void Modify(APIClient client, string[] args)
         {
-            string idtoken = Environment.GetEnvironmentVariable("ALLTODO_IDTOKEN", EnvironmentVariableTarget.User);
-            string authtoken = Environment.GetEnvironmentVariable("ALLTODO_AUTHTOKEN", EnvironmentVariableTarget.User);
+            // TODO: Implement
+            throw new NotImplementedException();
+        }
 
-            if (idtoken == null || authtoken == null || idtoken == string.Empty || authtoken == string.Empty)
-            {
-                Console.WriteLine("Please login before continuing");
-                return;
-            }
+        static void Remove(APIClient client, string[] args)
+        {
+            // TODO: Implement
+            throw new NotImplementedException();
         }
     }
 }

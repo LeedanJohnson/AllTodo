@@ -21,13 +21,21 @@ namespace AllTodo.Shared.Models
     {
         public int ID { get; set; } = 0;
         public int UserID { get; set; } = -1;
-        public TodoTitle Title { get; set; }
-        public TodoDescription Description { get; set; }
+        public string Title { get; set; }
+        public string Description { get; set; }
         public TodoState State { get; set; }
 
         public (bool success, string message) Validate()
         {
-            return Todo.Validate(Title, Description, State);
+            var title_validation = TodoTitle.Validate(Title);
+            if (!title_validation.success)
+                return title_validation;
+
+            var description_validation = TodoDescription.Validate(Description);
+            if (!description_validation.success)
+                return description_validation;
+
+            return Todo.Validate(new TodoTitle(Title), new TodoDescription(Description), State);
         }
 
         public (bool success, string message) ValidateIdentifiers(IUserService userservice, ITodoService todoservice)
@@ -43,7 +51,7 @@ namespace AllTodo.Shared.Models
 
         public Todo GetObject(IUserService userservice, ITodoService todoservice)
         {
-            return new Todo(ID, UserID, Title, Description, State, userservice, todoservice);
+            return new Todo(ID, UserID, new TodoTitle(Title), new TodoDescription(Description), State, userservice, todoservice);
         }
     }
 
@@ -99,6 +107,19 @@ namespace AllTodo.Shared.Models
             if (description is null)
                 return (false, "Description cannot be null");
             return (true, "Validation Successful");
+        }
+
+        public TodoDTO GetDTO()
+        {
+            TodoDTO dto = new TodoDTO();
+
+            dto.ID = this.id;
+            dto.UserID = this.user_id;
+            dto.Title = this.title.Value;
+            dto.Description = this.description.Value;
+            dto.State = this.state;
+
+            return dto;
         }
     }
 }

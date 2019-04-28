@@ -39,7 +39,7 @@ namespace AllTodo.Server.Controllers
             if (user != null)
             {
                 TokenCredentials tokens = user_service.GenerateTokens(user);
-                return Ok(tokens.GetDTO());
+                return Created("api/login", tokens.GetDTO());
             }
             return BadRequest();
         }

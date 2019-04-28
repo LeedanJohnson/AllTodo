@@ -25,7 +25,7 @@ namespace AllTodo.Shared.Services
         {
             lock (lock_object) { todo_dto.ID = current_id++; }
             Todo created_todo;
-            created_todo = new Todo(todo_dto, userservice);
+            created_todo = todo_dto.GetObject(userservice, this);
             todos.Add(created_todo);
             return created_todo;
         }
@@ -35,10 +35,10 @@ namespace AllTodo.Shared.Services
             if (!this.Exists(todo_dto.ID, user))
                 return null;
 
-            if (!todo_dto.Validate(userservice).success)
+            if (!todo_dto.Validate().success || !todo_dto.ValidateIdentifiers(userservice, this).success)
                 return null;
 
-            Todo updated = new Todo(todo_dto, userservice);
+            Todo updated = todo_dto.GetObject(userservice, this);
 
             RemoveTodo(todo_dto.ID, user);
             this.todos.Add(updated);
@@ -53,10 +53,10 @@ namespace AllTodo.Shared.Services
             TodoDTO dto = todo.GetDTO();
             dto.State = state;
 
-            if (!dto.Validate(userservice).success)
+            if (!dto.Validate().success || !dto.ValidateIdentifiers(userservice, this).success)
                 return null;
 
-            Todo updated = new Todo(dto, userservice);
+            Todo updated = dto.GetObject(userservice, this);
 
             RemoveTodo(todo, user);
             this.todos.Add(updated);

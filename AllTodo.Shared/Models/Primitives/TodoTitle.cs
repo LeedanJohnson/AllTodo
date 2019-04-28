@@ -57,7 +57,7 @@ namespace AllTodo.Shared.Models.Primitives
             if (value == null)
                 return (false, "Title cannot be null");
             if (value.Length < MIN_LENGTH || value.Length > MAX_LENGTH)
-                return (false, $"Invalid Length of Title: {value.Length}");
+                return (false, $"Invalid Length of Title. Expected {MIN_LENGTH}-{MAX_LENGTH}, got {value.Length}.");
             if (!VALIDITY_REGEX.IsMatch(value))
                 return (false, $"Title contained invalid characters: {value}");
             return (true, "Validation Successful");

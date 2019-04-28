@@ -55,18 +55,18 @@ namespace AllTodo.Shared.Services
             return users.ContainsKey(username) && users[username].hashed_password.Verify(password);
         }
 
-        private bool ValidateTokens(MachineIDToken idtoken, AuthToken authtoken)
+        private bool ValidateCredentials(TokenCredentials credentials)
         {
-            if (!tokenized_users.ContainsKey(idtoken))
+            if (!tokenized_users.ContainsKey(credentials.IDToken))
                 return false;
 
-            if (idtoken.IsExpired())
+            if (credentials.IDToken.IsExpired())
             {
-                tokenized_users.Remove(idtoken);
+                tokenized_users.Remove(credentials.IDToken);
                 return false;
             }
             
-            if (tokenized_users[idtoken].authtoken.Matches(authtoken))
+            if (tokenized_users[credentials.IDToken].authtoken.Matches(credentials.UserAuthToken))
             {
                 // TODO: Consider bumping session expiration?
                 return true;
@@ -83,27 +83,26 @@ namespace AllTodo.Shared.Services
             return null;
         }
 
-        public User GetUser(MachineIDToken idtoken, AuthToken authtoken)
+        public User GetUser(TokenCredentials credentials)
         {
-            if (ValidateTokens(idtoken, authtoken))
-                return users[tokenized_users[idtoken].username].user;
+            if (ValidateCredentials(credentials))
+                return users[tokenized_users[credentials.IDToken].username].user;
             return null;
         }
 
         public TokenCredentials GenerateTokens(User user)
         {
-            MachineIDToken idtoken = new MachineIDToken(this.datetime_provider);
-            AuthToken authtoken = new AuthToken();
+            MachineIDToken idtoken = MachineIDToken.Generate(this.datetime_provider);
+            AuthToken authtoken = AuthToken.Generate();
 
             tokenized_users.Add(idtoken, (authtoken, user.Username));
 
             return new TokenCredentials(idtoken, authtoken);
         }
 
-        public void RemoveTokens(string idtoken)
+        public void RemoveTokens(MachineIDToken idtoken)
         {
-            MachineIDToken IDToken = new MachineIDToken(idtoken, this.datetime_provider);
-            tokenized_users.Remove(IDToken);
+            tokenized_users.Remove(idtoken);
         }
 
         public User CreateUser(Username username, HashedPassword password, PhoneNumber phone_number)

@@ -9,9 +9,9 @@ namespace AllTodo.Shared.Services
     public interface IUserService
     {
         User GetUser(Username username, string password);
-        User GetUser(MachineIDToken idtoken, AuthToken authtoken);
+        User GetUser(TokenCredentials credentials);
         TokenCredentials GenerateTokens(User user);
-        void RemoveTokens(string idtoken);
+        void RemoveTokens(MachineIDToken idtoken);
         User CreateUser(Username username, HashedPassword password, PhoneNumber phone_number);
         bool Exists(Username username);
         bool Exists(int user_id);

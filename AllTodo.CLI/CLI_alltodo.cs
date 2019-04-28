@@ -6,7 +6,7 @@ namespace AllTodo.CLI
 {
     class CLI_alltodo
     {
-        public static void Call(string[] args)
+        public static void Call(APIClient client, string[] args)
         {
             if (args.Length < 1)
             {
@@ -20,10 +20,10 @@ namespace AllTodo.CLI
                     PrintUsage();
                     break;
                 case "account":
-                    CLI_account.Call(ArrayUtils.RemoveFirst(args));
+                    CLI_account.Call(client, ArrayUtils.RemoveFirst(args));
                     break;
                 case "todo":
-                    CLI_todo.Call(ArrayUtils.RemoveFirst(args));
+                    CLI_todo.Call(client, ArrayUtils.RemoveFirst(args));
                     break;
                 default:
                     Console.WriteLine("Error: improper usage. (--help for usage)");

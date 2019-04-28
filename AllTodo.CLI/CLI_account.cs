@@ -9,7 +9,7 @@ namespace AllTodo.CLI
 {
     class CLI_account
     {
-        public static void Call(string[] args)
+        public static void Call(APIClient client, string[] args)
         {
             if (args.Length < 1)
             {
@@ -23,10 +23,10 @@ namespace AllTodo.CLI
                     PrintUsage();
                     break;
                 case "login":
-                    Login(ArrayUtils.RemoveFirst(args));
+                    Login(client, ArrayUtils.RemoveFirst(args));
                     break;
                 case "create":
-                    Create(ArrayUtils.RemoveFirst(args));
+                    Create(client, ArrayUtils.RemoveFirst(args));
                     break;
 
                 default:
@@ -43,50 +43,81 @@ namespace AllTodo.CLI
                                     "\tcreate: Create an account.\n" );
         }
         
-        static void Login(string[] args)
+        static void Login(APIClient client, string[] args)
         {
-            APIClient client = new APIClient("http://localhost:44343");
-
-            (string username, string password) data;
+            string username, password;
 
             Console.WriteLine("Enter Username: ");
-            data.username = Console.ReadLine();
+            username = Console.ReadLine();
+            var username_validation = Username.Validate(username);
+            while (!username_validation.success)
+            {
+                Console.WriteLine($"Invalid Username: {username_validation.message}");
+                Console.WriteLine("Enter Username: ");
+                username = Console.ReadLine();
+                username_validation = Username.Validate(username);
+            }
 
             Console.WriteLine("Enter Password: ");
-            data.password = Console.ReadLine();
+            password = Console.ReadLine();
+            var password_validation = RawPassword.Validate(password);
+            while (!password_validation.success)
+            {
+                Console.WriteLine($"Invalid Password: {password_validation.message}");
+                Console.WriteLine("Enter Password: ");
+                password = Console.ReadLine();
+                password_validation = RawPassword.Validate(password);
+            }
 
-            var result = client.Post("api/login", data);
+            var result = client.Login(username, password);
 
-            Console.Write($"Status: {result.status}, JSON: {result.jsonstring}");
+            Console.WriteLine(result.message);
         }
 
-        static void Create(string[] args)
+        static void Create(APIClient client, string[] args)
         {
-            APIClient client = new APIClient("http://localhost:44343");
-
             (string username, string password, string phone_number) data;
 
             Console.WriteLine("Enter New Username: ");
             data.username = Console.ReadLine();
+            var username_validation = Username.Validate(data.username);
+            while (!username_validation.success)
+            {
+                Console.WriteLine($"Invalid Username: {username_validation.message}");
+                Console.WriteLine("Enter New Username: ");
+                data.username = Console.ReadLine();
+                username_validation = Username.Validate(data.username);
+            }
 
             Console.WriteLine("Enter New Password: ");
             data.password = Console.ReadLine();
+            var password_validation = RawPassword.Validate(data.password);
+            while (!password_validation.success)
+            {
+                Console.WriteLine($"Invalid Password: {password_validation.message}");
+                Console.WriteLine("Enter New Password: ");
+                data.password = Console.ReadLine();
+                password_validation = RawPassword.Validate(data.password);
+            }
 
             Console.WriteLine("Enter New Phone Number: ");
-            data.phone_number = Console.ReadLine();            
+            data.phone_number = Console.ReadLine();
+            var phone_number_validation = PhoneNumber.Validate(data.phone_number);
+            while (!phone_number_validation.success)
+            {
+                Console.WriteLine($"Invalid Phone Number: {phone_number_validation.message}");
+                Console.WriteLine("Enter New Phone Number: ");
+                data.phone_number = Console.ReadLine();
+                phone_number_validation = PhoneNumber.Validate(data.phone_number);
+            }           
 
             var result = client.Post("api/account", data);
 
-            if (result.status != System.Net.HttpStatusCode.OK)
-            {
-                Console.WriteLine($"There was an error with your request: {result.jsonstring}");
+            if (result.response_code == System.Net.HttpStatusCode.Created)
                 return;
-            }
 
-            TokenCredentialsDTO credentials = JsonConvert.DeserializeObject<TokenCredentialsDTO>(result.jsonstring);
-
-            Environment.SetEnvironmentVariable("ALLTODO_IDTOKEN", credentials.IDToken, EnvironmentVariableTarget.User);
-            Environment.SetEnvironmentVariable("ALLTODO_AUTHTOKEN", credentials.AuthToken, EnvironmentVariableTarget.User);
+            Console.WriteLine($"There was an error with your request: Code: {result.response_code} Content:{result.jsonstring}");
+            return;
         }
     }
 }

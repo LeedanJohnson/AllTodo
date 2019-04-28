@@ -21,37 +21,38 @@ namespace AllTodo.Server.Controllers
         private IUserService userservice;
         private IDateTimeProvider datetimeprovider;
 
-        [HttpPost]
-        public IActionResult Login([FromBody](string username, string password) data)
+        [HttpGet]
+        public IActionResult Login([FromHeader]string username, [FromHeader]string password)
         {
-            if (data.username == null || data.username == string.Empty)
+            if (username == null || username == string.Empty)
                 return BadRequest();
-            if (data.password == null || data.password == string.Empty)
+            if (password == null || password == string.Empty)
                 return BadRequest();
 
-            User user = this.userservice.GetUser(new Username(data.username), data.password);
+            User user = this.userservice.GetUser(new Username(username), password);
 
-            if (user != null)
-            {
-                TokenCredentials tokens = userservice.GenerateTokens(user);
-                return Ok(tokens);
-            }
-            return BadRequest();
+            if (user == null)
+                return Unauthorized();
+
+            TokenCredentials tokens = userservice.GenerateTokens(user);
+            return Ok(tokens.GetDTO());
         }
 
         [HttpDelete]
-        public IActionResult Logout(string idtoken, string authtoken)
+        public IActionResult Logout([FromHeader]string idtoken, [FromHeader]string authtoken)
         {
-            if (idtoken == null || idtoken == string.Empty)
-                return BadRequest();
-            if (authtoken == null || authtoken == string.Empty)
-                return BadRequest();
+            TokenCredentialsDTO credentials_dto = new TokenCredentialsDTO(idtoken, authtoken);
+            var credential_validation = credentials_dto.Validate();
+            if (!credential_validation.success)
+                return BadRequest("Bad Credentials: " + credential_validation.message);
 
-            User user = this.userservice.GetUser(new MachineIDToken(idtoken, this.datetimeprovider), new AuthToken(authtoken));
+            TokenCredentials credentials = credentials_dto.GetObject(datetimeprovider);
+
+            User user = this.userservice.GetUser(credentials);
 
             if (user != null)
             {
-                userservice.RemoveTokens(idtoken);
+                userservice.RemoveTokens(credentials.IDToken);
                 return Ok();
             }
             return BadRequest();

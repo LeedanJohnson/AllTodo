@@ -44,15 +44,16 @@ namespace AllTodo.Shared.Models.Primitives
             var validation_result = Username.Validate(value);
             if (!validation_result.success)
                 throw new InvalidInitializationException(validation_result.message);
+            this.value = value;
         }
 
-        private static readonly int MINIMUM_LENGTH = 1;
-        private static readonly int MAXIMUM_LENGTH = 80;
+        private static readonly int MIN_LENGTH = 4;
+        private static readonly int MAX_LENGTH = 40;
         private static readonly Regex VALIDITY_REGEX = new Regex("^[a-z\']+$");
         public static (bool success, string message) Validate(string value)
         {
-            if (value.Length < MINIMUM_LENGTH || value.Length > MAXIMUM_LENGTH)
-                return (false, "Invalid Length of UserName");
+            if (value.Length < MIN_LENGTH || value.Length > MAX_LENGTH)
+                return (false, $"Invalid Length of UserName. Expected {MIN_LENGTH}-{MAX_LENGTH}, got {value.Length}.");
 
             if (!VALIDITY_REGEX.IsMatch(value))
                 return (false, "Username contained invalid characters");

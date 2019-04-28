@@ -20,19 +20,54 @@ namespace AllTodo.CLI
             this.server_url = server_url;
         }
 
-        public (HttpStatusCode status, string jsonstring) Post(string path, object obj)
+        public (bool success, string message) Login(string username, string password)
+        {
+            string url = $"{this.server_url}/api/login";
+            Encoding encoding = Encoding.Default;
+            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
+            request.Method = "GET";
+            request.Headers["username"] = username;
+            request.Headers["password"] = password;
+
+            HttpWebResponse response;
+            try { response = (HttpWebResponse)request.GetResponse(); }
+            catch (WebException e) { response = (HttpWebResponse)e.Response; }
+
+            string result = "";
+            using (StreamReader reader = new StreamReader(response.GetResponseStream(), System.Text.Encoding.Default))
+            {
+                result = reader.ReadToEnd();
+            }
+
+            if (response.StatusCode != HttpStatusCode.OK)
+                return (false, "Login Failed");
+
+            TokenCredentialsDTO credentials = JsonConvert.DeserializeObject<TokenCredentialsDTO>(result);
+
+            Environment.SetEnvironmentVariable("ALLTODO_IDTOKEN", credentials.IDToken, EnvironmentVariableTarget.User);
+            Environment.SetEnvironmentVariable("ALLTODO_AUTHTOKEN", credentials.UserAuthToken, EnvironmentVariableTarget.User);
+
+            return (true, "Login Successful");
+        }
+
+        public (HttpStatusCode response_code, string jsonstring) Post(string path, object obj)
         {
             string data = JsonConvert.SerializeObject(obj);
             string url = $"{this.server_url}/{path}";
             Encoding encoding = Encoding.Default;
             HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
             request.Method = "POST";
+            request.Headers["idtoken"] = Environment.GetEnvironmentVariable("ALLTODO_IDTOKEN", EnvironmentVariableTarget.User);
+            request.Headers["authtoken"] = Environment.GetEnvironmentVariable("ALLTODO_AUTHTOKEN", EnvironmentVariableTarget.User);
             request.ContentType = "application/json; charset=utf-8";
             byte[] buffer = encoding.GetBytes(data);
             Stream dataStream = request.GetRequestStream();
             dataStream.Write(buffer, 0, buffer.Length);
             dataStream.Close();
-            HttpWebResponse response = (HttpWebResponse)request.GetResponse();
+
+            HttpWebResponse response;
+            try { response = (HttpWebResponse)request.GetResponse(); }
+            catch (WebException e) { response = (HttpWebResponse)e.Response; }
 
             string result = "";
             using (StreamReader reader = new StreamReader(response.GetResponseStream(), System.Text.Encoding.Default))
@@ -42,13 +77,18 @@ namespace AllTodo.CLI
             return (response.StatusCode, result);
         }
 
-        public (HttpStatusCode status, string jsonstring) Get(string path, TokenCredentialsDTO credentials)
+        public (HttpStatusCode response_code, string jsonstring) Get(string path)
         {
-            string url = $"{this.server_url}/{path}?idtoken={credentials.IDToken}&authtoken={credentials.AuthToken}";
+            string url = $"{this.server_url}/{path}";
             Encoding encoding = Encoding.Default;
             HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
             request.Method = "GET";
-            HttpWebResponse response = (HttpWebResponse)request.GetResponse();
+            request.Headers["idtoken"] = Environment.GetEnvironmentVariable("ALLTODO_IDTOKEN", EnvironmentVariableTarget.User);
+            request.Headers["authtoken"] = Environment.GetEnvironmentVariable("ALLTODO_AUTHTOKEN", EnvironmentVariableTarget.User);
+
+            HttpWebResponse response;
+            try { response = (HttpWebResponse)request.GetResponse(); }
+            catch (WebException e) { response = (HttpWebResponse)e.Response; }
 
             string result = "";
             using (StreamReader reader = new StreamReader(response.GetResponseStream(), System.Text.Encoding.Default))
@@ -58,19 +98,24 @@ namespace AllTodo.CLI
             return (response.StatusCode, result);
         }
 
-        public (HttpStatusCode status, string jsonstring) Patch(string path, object obj)
+        public (HttpStatusCode response_code, string jsonstring) Patch(string path, object obj)
         {
             string data = JsonConvert.SerializeObject(obj);
             string url = $"{this.server_url}/{path}";
             Encoding encoding = Encoding.Default;
             HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
             request.Method = "PATCH";
+            request.Headers["idtoken"] = Environment.GetEnvironmentVariable("ALLTODO_IDTOKEN", EnvironmentVariableTarget.User);
+            request.Headers["authtoken"] = Environment.GetEnvironmentVariable("ALLTODO_AUTHTOKEN", EnvironmentVariableTarget.User);
             request.ContentType = "application/json; charset=utf-8";
             byte[] buffer = encoding.GetBytes(data);
             Stream dataStream = request.GetRequestStream();
             dataStream.Write(buffer, 0, buffer.Length);
             dataStream.Close();
-            HttpWebResponse response = (HttpWebResponse)request.GetResponse();
+
+            HttpWebResponse response;
+            try { response = (HttpWebResponse)request.GetResponse(); }
+            catch (WebException e) { response = (HttpWebResponse)e.Response; }
 
             string result = "";
             using (StreamReader reader = new StreamReader(response.GetResponseStream(), System.Text.Encoding.Default))

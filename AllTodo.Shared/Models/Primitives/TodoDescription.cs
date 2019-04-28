@@ -57,7 +57,7 @@ namespace AllTodo.Shared.Models.Primitives
             if (value == null)
                 return (false, "Description cannot be null");
             if (value.Length < MIN_LENGTH || value.Length > MAX_LENGTH)
-                return (false, $"Invalid Length of Description: {value.Length}");
+                return (false, $"Invalid Length of Description. Expected {MIN_LENGTH}-{MAX_LENGTH}, got {value.Length}.");
             if (!VALIDITY_REGEX.IsMatch(value))
                 return (false, $"Description contained invalid characters: {value}");
             return (true, "Validation Successful");
