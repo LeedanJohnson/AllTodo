@@ -38,7 +38,13 @@ namespace AllTodo.Server.Controllers
             if (user == null)
                 return Unauthorized();
 
-            return Ok(this.todoservice.GetTodos(user));
+            List<TodoDTO> dtos = new List<TodoDTO>();
+            List<Todo> todos = new List<Todo>(this.todoservice.GetTodos(user));
+
+            foreach (Todo todo in todos)
+                dtos.Add(todo.GetDTO());
+
+            return Ok(dtos);
         }
 
         [HttpGet("{id}")]

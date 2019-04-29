@@ -59,19 +59,19 @@ namespace AllTodo.Shared.Models
     public class Todo
     {
         private readonly int id;
-        public int ID { get; }
+        public int ID { get { return id; } }
 
         private readonly int user_id;
-        public int UserID { get; }
+        public int UserID { get { return user_id; } }
 
         private readonly TodoTitle title;
-        public TodoTitle Title { get; }
+        public TodoTitle Title { get { return title; } }
 
         private readonly TodoDescription description;
-        public TodoDescription Description { get; }
+        public TodoDescription Description { get { return description; } }
 
         private TodoState state;
-        public TodoState State { get; }
+        public TodoState State { get { return state; } }
 
         public Todo(int id, int user_id, TodoTitle title, TodoDescription description, TodoState state, IUserService userservice, ITodoService todoservice)
         {
