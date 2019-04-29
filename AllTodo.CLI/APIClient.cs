@@ -18,6 +18,7 @@ namespace AllTodo.CLI
         public APIClient(string server_url)
         {
             this.server_url = server_url;
+            ServicePointManager.ServerCertificateValidationCallback = delegate { return true; };
         }
 
         public (bool success, string message) Login(string username, string password)
