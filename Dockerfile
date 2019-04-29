@@ -10,6 +10,7 @@ COPY . .
 WORKDIR "/src/AllTodo.Server"
 RUN dotnet build "AllTodo.Server.csproj" -c Release -o /app
 
+WORKDIR "/src/AllTodo.Server/Release"
 # Stuff I don't understand
 ENV certPassword 1234
 
