@@ -20,7 +20,7 @@ namespace AllTodo.Server
         {
             services.AddMvc(options =>
             {
-                options.Filters.Add(new RequireHttpsAttribute());
+                // options.Filters.Add(new RequireHttpsAttribute());
             });
 
             IDateTimeProvider datetimeprovider = new SimpleDateTimeProvider();
@@ -43,7 +43,7 @@ namespace AllTodo.Server
                 app.UseDeveloperExceptionPage();
             }
 
-            app.UseRewriter(new RewriteOptions().AddRedirectToHttps(301, 44343));
+            // app.UseRewriter(new RewriteOptions().AddRedirectToHttps(301, 44343));
 
             app.UseMvc();
         }
